@@ -164,7 +164,7 @@ How to export:
 4. Save as CSV
 5. Upload the file here
 
-Required to fetch bird observations.
+If no file is provided, all birds will be considered lifers.
 """
     )    
 
