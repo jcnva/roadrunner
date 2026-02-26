@@ -1,0 +1,6 @@
+streamlit==1.31.1
+folium==0.15.1
+streamlit-folium==0.18.0
+pandas==2.1.4
+openrouteservice==2.3.3
+ebird-api==3.0.6
