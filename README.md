@@ -16,7 +16,7 @@ The app offers two distinct ways to scan the globe for birds:
 
 * 🎯 Hex Scan:
   * How it works: The user clicks a single point on the map.
-  * Logic: The app generates a hexagonal grid of coordinates around that point with a set of 50km diameter circles.
+  * Logic: The app generates a hexagonal grid of coordinates around that point with an array of 50km diameter circles.
   * Use Case: Searching a broad area up to 136km in diameter with gapless coverage.
 
 * 🚗 Road Trip:
