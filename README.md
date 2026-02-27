@@ -1,5 +1,5 @@
 # Lifer Mapper
-A specialized geospatial Streamlit application designed for birdwatchers. Its primary purpose is to help users find "lifers"—bird species they have never seen before—by cross-referencing their personal eBird "Life List" with real-time observation data from the eBird API.
+A trip planning app for lifer-chasers. Its primary purpose is to help users find "lifers" (bird species they have never seen before) by cross-referencing their personal eBird "Life List" with real-time observation data from the eBird API.
 
 🛰️ Core Functionality
 1. Smart Filtering (The "Lifer" Engine)
@@ -18,9 +18,9 @@ The app offers two distinct ways to scan the globe for birds:
 
     🎯 Hex Scan: * How it works: The user clicks a single point on the map.
 
-        Logic: The app generates a hexagonal grid of coordinates around that point.
+        Logic: The app generates a hexagonal grid of coordinates around that point with a set of 50km diameter circles.
 
-        Use Case: Searching a broad area (like a county or a large park) with gapless coverage.
+        Use Case: Searching a broad area up to 136km in diameter with gapless coverage.
 
     🚗 Road Trip: * How it works: The user selects a START and END point.
 
