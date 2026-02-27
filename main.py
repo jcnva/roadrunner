@@ -188,7 +188,7 @@ If no file is provided, all species will be reported.
             help="""
     Hex Scan Mode:
     • Click one point on the map
-    • Scans a hexagonal grid around that location
+    • Scans a hexagonal grid around that location out to a radius of 136.6km
     """
         ):
             st.session_state.scan_mode = 'hex'
@@ -354,5 +354,6 @@ if (st.session_state.scan_mode and map_data.get("last_clicked")) or st.session_s
             st.session_state.search_results = {'points': search_points, 'species_map': species_map}
             st.session_state.scan_mode, st.session_state.road_points = None, []
             st.rerun()
+
 
 
