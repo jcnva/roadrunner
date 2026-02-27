@@ -11,8 +11,8 @@ from streamlit_folium import st_folium
 from openrouteservice import convert
 
 # --- CONFIGURATION ---
-API_KEY_ENV = st.secrets('EBIRD_API_KEY')
-ORS_API_KEY_ENV = st.secrets('ORS_API_KEY')
+API_KEY_ENV = st.secrets['EBIRD_API_KEY']
+ORS_API_KEY_ENV = st.secrets['ORS_API_KEY']
 DEFAULT_LIFE_LIST = 'ebird_world_life_list.csv'
 RADIUS = 50 
 COLORS = ['red', 'blue', 'gray', 'darkred', 'lightred', 'orange', 'beige',
@@ -354,4 +354,5 @@ if (st.session_state.scan_mode and map_data.get("last_clicked")) or st.session_s
             st.session_state.search_results = {'points': search_points, 'species_map': species_map}
             st.session_state.scan_mode, st.session_state.road_points = None, []
             st.rerun()
+
 
