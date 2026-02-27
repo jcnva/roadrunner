@@ -14,12 +14,12 @@ The app doesn't just show birds; it filters them based on your personal history.
 
 The app offers two distinct ways to scan the globe for birds:
 
-* 🎯 Hex Scan: * How it works: The user clicks a single point on the map.
-
+* 🎯 Hex Scan:
+  * How it works: The user clicks a single point on the map.
   * Logic: The app generates a hexagonal grid of coordinates around that point with a set of 50km diameter circles.
   * Use Case: Searching a broad area up to 136km in diameter with gapless coverage.
 
-* 🚗 Road Trip: * How it works: The user selects a START and END point.
-
+* 🚗 Road Trip:
+  * How it works: The user selects a START and END point.
   * Logic: It uses the OpenRouteService API to calculate the actual driving route and samples coordinates every ~70km along that road.
   * Use Case: Planning a trip and identifying which rare birds can be found within a 50km detour of the highway.
