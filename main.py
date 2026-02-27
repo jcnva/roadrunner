@@ -116,6 +116,9 @@ if 'center' not in st.session_state: st.session_state.center = [35.0, -100.0]
 if 'zoom' not in st.session_state: st.session_state.zoom = 4
 if 'scan_mode' not in st.session_state: st.session_state.scan_mode = None 
 if 'road_points' not in st.session_state: st.session_state.road_points = []
+if 'pending_road' not in st.session_state: st.session_state.pending_road = False
+if 'pending_road_points' not in st.session_state: st.session_state.pending_road_points = []
+if 'pending_search_points' not in st.session_state: st.session_state.pending_search_points = None
 
 with st.sidebar:
     st.title("Lifer Mapper")
@@ -164,7 +167,7 @@ How to export:
 4. Save as CSV
 5. Upload the file here
 
-If no file is provided, all birds will be considered lifers.
+If no file is provided, all species will be reported.
 """
     )    
 
@@ -216,6 +219,29 @@ If no file is provided, all birds will be considered lifers.
             st.info("🚗 Road Trip: Click the START point.")
         elif count == 1:
             st.warning("🚗 Road Trip (1/2 Selected): Click the END point.")
+        elif st.session_state.pending_road:
+            st.info("Route ready. Click 'Compute Route & Scan' to continue.")
+
+    # If a route has been selected but not yet computed, show a button to compute it
+    if st.session_state.pending_road:
+        if st.button("Compute Route & Scan", use_container_width=True):
+            if not ors_key:
+                st.error("Please enter an OpenRouteService API Key in the sidebar.")
+            else:
+                try:
+                    search_points, road_geometry = get_ors_route_coords(
+                        st.session_state.pending_road_points[0],
+                        st.session_state.pending_road_points[1],
+                        RADIUS, ors_key
+                    )
+                    st.session_state.road_geometry = road_geometry
+                    st.session_state.pending_road = False
+                    st.session_state.pending_road_points = []
+                    st.session_state.pending_search_points = search_points
+                    st.session_state.scan_mode = None
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Routing Error: {e}")
  
     status_placeholder = st.empty()
 
@@ -230,6 +256,10 @@ If no file is provided, all birds will be considered lifers.
 
     if st.button("❌ Reset / Clear Map", use_container_width=True):
         st.session_state.scan_mode, st.session_state.road_points, st.session_state.search_results = None, [], None
+        st.session_state.pending_road = False
+        st.session_state.pending_road_points = []
+        st.session_state.pending_search_points = None
+        if 'road_geometry' in st.session_state: del st.session_state['road_geometry']
         st.rerun()
 
 # --- MAP RENDERING ---
@@ -267,48 +297,60 @@ if st.session_state.search_results:
 map_data = st_folium(m, height=1000, use_container_width=True, key="mapper")
 
 # --- SCAN LOGIC ---
-if st.session_state.scan_mode and map_data.get("last_clicked"):
-    click = (map_data["last_clicked"]["lat"], map_data["last_clicked"]["lng"])
+# Trigger scanning either via an armed map click (hex/road) or via a pending search computed from the sidebar
+if (st.session_state.scan_mode and map_data.get("last_clicked")) or st.session_state.pending_search_points:
     search_points = []
-    
-    if st.session_state.scan_mode == 'hex':
-        search_points = get_hex_coords(click[0], click[1], RADIUS)
-    elif st.session_state.scan_mode == 'road':
-        if click not in st.session_state.road_points:
-            st.session_state.road_points.append(click)
-            if len(st.session_state.road_points) == 2:
-                if not ors_key:
-                    st.error("Please enter an OpenRouteService API Key in the sidebar.")
+
+    # If a computed route/search was queued, use it
+    if st.session_state.pending_search_points:
+        search_points = st.session_state.pending_search_points
+        st.session_state.pending_search_points = None
+    else:
+        click = (map_data["last_clicked"]["lat"], map_data["last_clicked"]["lng"])
+        if st.session_state.scan_mode == 'hex':
+            search_points = get_hex_coords(click[0], click[1], RADIUS)
+        elif st.session_state.scan_mode == 'road':
+            if click not in st.session_state.road_points:
+                st.session_state.road_points.append(click)
+                if len(st.session_state.road_points) == 2:
+                    # Defer heavy routing call until user confirms — prevents UI hang on click
+                    st.session_state.pending_road = True
+                    st.session_state.pending_road_points = st.session_state.road_points.copy()
+                    # Keep the selected points visible; user must click the Compute button to proceed
+                    st.rerun()
                 else:
-                    try:
-                        search_points, road_geometry = get_ors_route_coords(
-                            st.session_state.road_points[0], 
-                            st.session_state.road_points[1], 
-                            RADIUS, ors_key
-                        )
-                        # We store the geometry to draw the actual road line on the map later
-                        st.session_state.road_geometry = road_geometry 
-                    except Exception as e:
-                        st.error(f"Routing Error: {e}")
-            else: 
-                st.rerun()
+                    st.rerun()
 
     if search_points:
-        with status_placeholder:
-            with st.status("🛰️ Scanning...", expanded=False):
-                current_api_key = user_api_key if user_api_key else API_KEY_ENV
-                seen_species = get_seen_species(uploaded_csv, DEFAULT_LIFE_LIST)
-                species_map = {} 
-                for pt_lat, pt_lng in search_points:
-                    obs = ebird.get_nearby_observations(current_api_key, pt_lat, pt_lng, dist=RADIUS, back=BACK_DAYS, category='species')
-                    lifers = [o for o in obs if o['comName'] not in seen_species and o.get('exoticCategory') != 'X']
-                    for sp in lifers:
-                        s_code = sp['speciesCode']
-                        specifics = ebird.get_nearest_species(current_api_key, s_code, pt_lat, pt_lng, dist=RADIUS, back=BACK_DAYS)
-                        if s_code not in species_map: species_map[s_code] = []
-                        for b in specifics:
-                            if not any(existing['subId'] == b['subId'] for existing in species_map[s_code]):
-                                species_map[s_code].append(b)
-                st.session_state.search_results = {'points': search_points, 'species_map': species_map}
-                st.session_state.scan_mode, st.session_state.road_points = None, []
-                st.rerun()
+        with status_placeholder.container():
+            st.markdown("### 🛰️ Scanning...")
+            progress_bar = st.progress(0)
+            progress_text = st.empty()
+
+            current_api_key = user_api_key if user_api_key else API_KEY_ENV
+            seen_species = get_seen_species(uploaded_csv, DEFAULT_LIFE_LIST)
+            species_map = {}
+            total = len(search_points)
+            for idx, (pt_lat, pt_lng) in enumerate(search_points):
+                obs = ebird.get_nearby_observations(current_api_key, pt_lat, pt_lng, dist=RADIUS, back=BACK_DAYS, category='species')
+                lifers = [o for o in obs if o['comName'] not in seen_species and o.get('exoticCategory') != 'X']
+                for sp in lifers:
+                    s_code = sp['speciesCode']
+                    specifics = ebird.get_nearest_species(current_api_key, s_code, pt_lat, pt_lng, dist=RADIUS, back=BACK_DAYS)
+                    if s_code not in species_map: species_map[s_code] = []
+                    for b in specifics:
+                        if not any(existing['subId'] == b['subId'] for existing in species_map[s_code]):
+                            species_map[s_code].append(b)
+
+                # Update progress UI
+                pct = int(((idx + 1) / total) * 100)
+                progress_bar.progress(pct)
+                progress_text.markdown(f"Scanned **{idx + 1}/{total}** sections")
+
+            # Ensure final state reflects completion
+            progress_bar.progress(100)
+            progress_text.markdown(f"Scanned **{total}/{total}** sections — complete")
+
+            st.session_state.search_results = {'points': search_points, 'species_map': species_map}
+            st.session_state.scan_mode, st.session_state.road_points = None, []
+            st.rerun()
