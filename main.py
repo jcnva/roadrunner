@@ -11,8 +11,12 @@ from streamlit_folium import st_folium
 from openrouteservice import convert
 
 # --- CONFIGURATION ---
-API_KEY_ENV = st.secrets['EBIRD_API_KEY']
-ORS_API_KEY_ENV = st.secrets['ORS_API_KEY']
+try:
+    API_KEY_ENV = st.secrets['EBIRD_API_KEY']
+    ORS_API_KEY_ENV = st.secrets['ORS_API_KEY']
+except:
+    API_KEY_ENV = os.getenv('EBIRD_API_KEY')
+    ORS_API_KEY_ENV = os.getenv('ORS_API_KEY')
 DEFAULT_LIFE_LIST = 'ebird_world_life_list.csv'
 RADIUS = 50 
 COLORS = ['red', 'blue', 'gray', 'darkred', 'lightred', 'orange', 'beige',
