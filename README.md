@@ -2,7 +2,7 @@
 A trip planning app for lifer-chasers. Its primary purpose is to help users find "lifers" (bird species they have never seen before) by cross-referencing their personal eBird "Life List" with real-time observation data from the eBird API.
 
 ## Core Functionality
-### Smart Filtering (The "Lifer" Engine)
+### Filtering
 
 The app doesn't just show birds; it filters them based on your personal history.
 
@@ -10,7 +10,7 @@ The app doesn't just show birds; it filters them based on your personal history.
 * Automatic Exclusion: The app compares nearby sightings against this list and only displays species the user hasn't checked off yet.
 * Exotic Filtering: It ignores species categorized as exotic (category 'X') to prioritize native or established sightings.
 
-### Strategic Search Modes
+### Search Modes
 
 The app offers two distinct ways to scan the globe for birds:
 
