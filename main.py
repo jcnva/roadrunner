@@ -28,11 +28,11 @@ st.set_page_config(page_title="Lifer Mapper", layout="wide", initial_sidebar_sta
 # CSS: Locked Sidebar, No Margins
 st.markdown("""
 <style>
-    section[data-testid="stSidebar"] { min-width: 278px !important; max-width: 278px !important; width: 278px !important; }
-    .block-container { padding: 0rem !important; max-width: 100% !important; height: 100vh !important; margin: 0px !important; }
-    header, footer, [data-testid="stHeader"] { display: none !important; visibility: hidden !important; }
-    section[data-testid="stSidebar"] div[data-testid="stSidebarHeader"] { display: none !important; }
-    section[data-testid="stSidebar"] div[data-testid="stSidebarUserContent"] { padding-bottom: 1rem !important; }
+    section[data-testid="stSidebar"] { width: 278px; }
+    section[data-testid="stSidebar"] div[data-testid="stMarkdownContainer"] h1 { padding-top: 0 !important; margin: 0 !important; }
+    .block-container { padding: 0px; padding-top: 0.5rem; max-width: 100%; height: 100vh; margin: 0px; }
+    header[data-testid="stHeader"] { height: 2rem ; min-height: 2rem; }
+    section[data-testid="stSidebar"] div[data-testid="stSidebarHeader"] { height: 30px; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -372,6 +372,7 @@ if (st.session_state.scan_mode and map_data.get("last_clicked")) or st.session_s
             st.session_state.search_results = {'points': search_points, 'species_map': species_map}
             st.session_state.scan_mode, st.session_state.road_points = None, []
             st.rerun()
+
 
 
 
