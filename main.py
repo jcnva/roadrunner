@@ -33,6 +33,7 @@ st.markdown("""
     .block-container { padding: 0px; padding-top: 0.5rem; max-width: 100%; height: 100vh; margin: 0px; }
     header[data-testid="stHeader"] { height: 2rem ; min-height: 2rem; }
     section[data-testid="stSidebar"] div[data-testid="stSidebarHeader"] { height: 30px; }
+    section[data-testid="stSidebar"] div[data-testid="stSidebarUserContent"] { padding-bottom: 1rem !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -372,6 +373,7 @@ if (st.session_state.scan_mode and map_data.get("last_clicked")) or st.session_s
             st.session_state.search_results = {'points': search_points, 'species_map': species_map}
             st.session_state.scan_mode, st.session_state.road_points = None, []
             st.rerun()
+
 
 
 
