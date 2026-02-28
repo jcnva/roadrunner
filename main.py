@@ -28,20 +28,10 @@ st.set_page_config(page_title="Lifer Mapper", layout="wide", initial_sidebar_sta
 # CSS: Locked Sidebar, No Margins
 st.markdown("""
 <style>
-    [data-testid="collapsedControl"], button[kind="headerNoPadding"] { display: none !important; }
-    section[data-testid="stSidebar"] { min-width: 300px !important; max-width: 300px !important; width: 300px !important; }
-    html, body, .stApp { margin: 0 !important; padding: 0 !important; height: 100vh !important; overflow: hidden !important; }
-    [data-testid="stMain"], .stMainContainer, .main { padding: 0px !important; margin: 0px !important; height: 100vh !important; }
+    section[data-testid="stSidebar"] { min-width: 278px !important; max-width: 278px !important; width: 278px !important; }
     .block-container { padding: 0rem !important; max-width: 100% !important; height: 100vh !important; margin: 0px !important; }
     header, footer, [data-testid="stHeader"] { display: none !important; visibility: hidden !important; }
-    iframe { width: 100% !important; height: 100vh !important; border: none !important; display: block !important; }
-    [data-testid="stSidebar"] { padding-top: 0rem !important; }
-    [data-testid="stSidebar"] [data-testid="stVerticalBlock"] { padding-top: 0rem !important; }
-    [data-testid="stSidebar"] .stMarkdown { padding-top: 0rem !important; }
-    section[data-testid="stSidebar"] div[data-testid="stMarkdownContainer"] h1 { padding-top: 1rem !important; margin: 0 !important; }
     section[data-testid="stSidebar"] div[data-testid="stSidebarHeader"] { display: none !important; }
-    section[data-testid="stSidebar"] div[data-testid="stSidebarUserContent"] { padding-bottom: 1rem !important; }
-    .leaflet-control-layers-tree { font-size: 11px !important; line-height: 1.2 !important; margin-right: 15px !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -249,7 +239,7 @@ If no file is provided, all species will be reported.
  
     status_placeholder = st.empty()
 
-    # RESTORED METRICS LOGIC
+    # METRICS LOGIC
     if st.session_state.search_results:
         res = st.session_state.search_results
         total_sightings = sum(len(sightings) for sightings in res['species_map'].values())
@@ -358,6 +348,7 @@ if (st.session_state.scan_mode and map_data.get("last_clicked")) or st.session_s
             st.session_state.search_results = {'points': search_points, 'species_map': species_map}
             st.session_state.scan_mode, st.session_state.road_points = None, []
             st.rerun()
+
 
 
 
