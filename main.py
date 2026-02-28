@@ -172,9 +172,24 @@ If no file is provided, all species will be reported.
         help="How many days back to search for sightings"
     )
 
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
 
     with col1:
+        if st.button(
+            "📍 Single Scan",
+            use_container_width=True,
+            type="primary" if st.session_state.scan_mode == 'single' else "secondary",
+            help="""
+    Single Scan Mode:
+    • Click one point on the map
+    • Scans ONLY that location (50km radius)
+    • Fastest scan option
+    """
+        ):
+            st.session_state.scan_mode = 'single'
+            st.rerun()
+
+    with col2:
         if st.button(
             "🎯 Hex Scan",
             use_container_width=True,
@@ -182,13 +197,13 @@ If no file is provided, all species will be reported.
             help="""
     Hex Scan Mode:
     • Click one point on the map
-    • Scans a hexagonal grid around that location out to a radius of 136.6km
+    • Scans a hexagonal grid around that location out to a radius of 136km
     """
         ):
             st.session_state.scan_mode = 'hex'
             st.rerun()
 
-    with col2:
+    with col3:
         if st.button(
             "🚗 Road Trip",
             use_container_width=True,
@@ -204,9 +219,11 @@ If no file is provided, all species will be reported.
             st.session_state.scan_mode = 'road'
             st.session_state.road_points = []
             st.rerun()
-
-    if st.session_state.scan_mode == 'hex':
-        st.info("🎯 Map Armed: Click one point to scan.")
+    
+    if st.session_state.scan_mode == 'single':
+        st.info("📍 Map Armed: Click one point to scan that location.")
+    elif st.session_state.scan_mode == 'hex':
+        st.info("🎯 Map Armed: Click one point to scan hex grid.")
     elif st.session_state.scan_mode == 'road':
         count = len(st.session_state.road_points)
         if count == 0:
@@ -244,9 +261,13 @@ If no file is provided, all species will be reported.
         res = st.session_state.search_results
         total_sightings = sum(len(sightings) for sightings in res['species_map'].values())
         total_species = len(res['species_map'])
-        
-        st.metric("Unique Sightings", total_sightings)
-        st.metric("Target Species", total_species)
+
+        col1, col2 = st.columns(2) 
+
+        with col1:
+            st.metric("Unique Sightings", total_sightings)
+        with col2:
+            st.metric("Target Species", total_species)
 
     if st.button("❌ Reset / Clear Map", use_container_width=True):
         st.session_state.scan_mode, st.session_state.road_points, st.session_state.search_results = None, [], None
@@ -303,6 +324,8 @@ if (st.session_state.scan_mode and map_data.get("last_clicked")) or st.session_s
         click = (map_data["last_clicked"]["lat"], map_data["last_clicked"]["lng"])
         if st.session_state.scan_mode == 'hex':
             search_points = get_hex_coords(click[0], click[1], RADIUS)
+        elif st.session_state.scan_mode == 'single':
+            search_points = [click]
         elif st.session_state.scan_mode == 'road':
             if click not in st.session_state.road_points:
                 st.session_state.road_points.append(click)
@@ -348,7 +371,6 @@ if (st.session_state.scan_mode and map_data.get("last_clicked")) or st.session_s
             st.session_state.search_results = {'points': search_points, 'species_map': species_map}
             st.session_state.scan_mode, st.session_state.road_points = None, []
             st.rerun()
-
 
 
 
