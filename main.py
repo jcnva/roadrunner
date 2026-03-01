@@ -188,7 +188,10 @@ If no file is provided, all species will be reported.
             use_container_width=True,
             type="primary" if st.session_state.scan_mode == 'single' else "secondary",
             disabled=is_api_key_missing, # Disable if no key
-            help="Enter an eBird API key to enable." if is_api_key_missing else "Scan ONLY one location."
+            help="Enter an eBird API key to enable." if is_api_key_missing else """
+                • Click one point on the map
+                • Scans ONLY that location (50km radius)
+                """
         ):
             st.session_state.scan_mode = 'single'
             st.rerun()
@@ -199,7 +202,10 @@ If no file is provided, all species will be reported.
             use_container_width=True,
             type="primary" if st.session_state.scan_mode == 'hex' else "secondary",
             disabled=is_api_key_missing, # Disable if no key
-            help="Enter an eBird API key to enable." if is_api_key_missing else "Scan a hexagonal grid."
+            help="Enter an eBird API key to enable." if is_api_key_missing else """
+                • Click one point on the map
+                • Scans a hexagonal grid around that location out to a radius of 136km
+                """
         ):
             st.session_state.scan_mode = 'hex'
             st.rerun()
@@ -214,7 +220,12 @@ If no file is provided, all species will be reported.
             use_container_width=True,
             type="primary" if st.session_state.scan_mode == 'road' else "secondary",
             disabled=road_disabled, # Disable if either key is missing
-            help="Enter eBird and ORS keys to enable." if road_disabled else "Scan along a driving route."
+            help="Enter eBird and ORS keys to enable." if road_disabled else """
+                • Click a START point
+                • Click an END point
+                • Scans along the real driving route
+                • Finds lifers within 50 km of the road
+                """
         ):
             st.session_state.scan_mode = 'road'
             st.session_state.road_points = []
