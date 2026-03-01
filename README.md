@@ -14,6 +14,11 @@ The app doesn't just show birds; it filters them based on your personal history.
 
 The app offers two distinct ways to scan the globe for birds:
 
+* 📍 Single Scan:
+  * How it works: The user clicks a single point on the map.
+  * Logic: The app searches a single 50km diameter circle around that point.
+  * Use Case: Searching an area with a 50km radius.
+
 * 🎯 Hex Scan:
   * How it works: The user clicks a single point on the map.
   * Logic: The app generates a hexagonal grid of coordinates around that point with an array of 50km diameter circles.
