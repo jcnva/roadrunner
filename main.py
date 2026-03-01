@@ -23,9 +23,10 @@ COLORS = ['red', 'blue', 'gray', 'darkred', 'lightred', 'orange', 'beige',
           'green', 'darkgreen', 'lightgreen', 'darkblue', 'lightblue',
           'purple', 'darkpurple', 'pink', 'cadetblue', 'lightgray', 'black']
 
-st.set_page_config(page_title="Lifer Mapper", layout="wide", initial_sidebar_state="expanded")
+st.set_page_config(page_title="Roadrunner", layout="wide", page_icon='roadrunner.png', initial_sidebar_state="expanded")
 
 # CSS: Locked Sidebar, No Margins
+st.logo(image='roadrunner.png', size='large')
 st.markdown("""
 <style>
     section[data-testid="stSidebar"] { width: 278px; }
@@ -117,7 +118,7 @@ if 'pending_road_points' not in st.session_state: st.session_state.pending_road_
 if 'pending_search_points' not in st.session_state: st.session_state.pending_search_points = None
 
 with st.sidebar:
-    st.title("Lifer Mapper")
+    st.title("Roadrunner")
     user_api_key = st.text_input(
         "eBird API Key",
         value=API_KEY_ENV if API_KEY_ENV else "",
