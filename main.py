@@ -30,7 +30,7 @@ st.markdown("""
 <style>
     section[data-testid="stSidebar"] { width: 278px; }
     section[data-testid="stSidebar"] div[data-testid="stMarkdownContainer"] h1 { padding-top: 0 !important; margin: 0 !important; }
-    .block-container { padding: 0px; padding-top: 0.5rem; max-width: 100%; height: 100vh; margin: 0px; }
+    .block-container { padding: 0px; padding-top: 1rem; max-width: 100%; height: 100vh; margin: 0px; }
     header[data-testid="stHeader"] { height: 2rem ; min-height: 2rem; }
     section[data-testid="stSidebar"] div[data-testid="stSidebarHeader"] { height: 30px; }
     section[data-testid="stSidebar"] div[data-testid="stSidebarUserContent"] { padding-bottom: 1rem !important; }
@@ -174,6 +174,12 @@ If no file is provided, all species will be reported.
         help="How many days back to search for sightings"
     )
 
+    # --- Updated Scan Buttons with Validation ---
+
+    # Define the condition: buttons are disabled if the key is empty
+    # This checks both the manual input and the environment fallback
+    is_api_key_missing = not (user_api_key)
+
     col1, col2, col3 = st.columns(3)
 
     with col1:
@@ -181,12 +187,8 @@ If no file is provided, all species will be reported.
             "📍 Single Scan",
             use_container_width=True,
             type="primary" if st.session_state.scan_mode == 'single' else "secondary",
-            help="""
-    Single Scan Mode:
-    • Click one point on the map
-    • Scans ONLY that location (50km radius)
-    • Fastest scan option
-    """
+            disabled=is_api_key_missing, # Disable if no key
+            help="Enter an eBird API key to enable." if is_api_key_missing else "Scan ONLY one location."
         ):
             st.session_state.scan_mode = 'single'
             st.rerun()
@@ -196,31 +198,31 @@ If no file is provided, all species will be reported.
             "🎯 Hex Scan",
             use_container_width=True,
             type="primary" if st.session_state.scan_mode == 'hex' else "secondary",
-            help="""
-    Hex Scan Mode:
-    • Click one point on the map
-    • Scans a hexagonal grid around that location out to a radius of 136km
-    """
+            disabled=is_api_key_missing, # Disable if no key
+            help="Enter an eBird API key to enable." if is_api_key_missing else "Scan a hexagonal grid."
         ):
             st.session_state.scan_mode = 'hex'
             st.rerun()
 
     with col3:
+        # Road Trip requires both eBird AND ORS keys
+        is_ors_missing = not (ors_key)
+        road_disabled = is_api_key_missing or is_ors_missing
+        
         if st.button(
             "🚗 Road Trip",
             use_container_width=True,
             type="primary" if st.session_state.scan_mode == 'road' else "secondary",
-            help="""
-    Road Trip Mode:
-    • Click a START point
-    • Click an END point
-    • Scans along the real driving route
-    • Finds lifers within 50 km of the road
-    """
+            disabled=road_disabled, # Disable if either key is missing
+            help="Enter eBird and ORS keys to enable." if road_disabled else "Scan along a driving route."
         ):
             st.session_state.scan_mode = 'road'
             st.session_state.road_points = []
             st.rerun()
+
+    # Optional: Add a warning message if keys are missing
+    if is_api_key_missing:
+        st.caption("⚠️ **Buttons disabled:** Please provide an eBird API key above.")    
     
     if st.session_state.scan_mode == 'single':
         st.info("📍 Map Armed: Click one point to scan that location.")
@@ -238,23 +240,20 @@ If no file is provided, all species will be reported.
     # If a route has been selected but not yet computed, show a button to compute it
     if st.session_state.pending_road:
         if st.button("Compute Route & Scan", use_container_width=True):
-            if not ors_key:
-                st.error("Please enter an OpenRouteService API Key in the sidebar.")
-            else:
-                try:
-                    search_points, road_geometry = get_ors_route_coords(
-                        st.session_state.pending_road_points[0],
-                        st.session_state.pending_road_points[1],
-                        RADIUS, ors_key
-                    )
-                    st.session_state.road_geometry = road_geometry
-                    st.session_state.pending_road = False
-                    st.session_state.pending_road_points = []
-                    st.session_state.pending_search_points = search_points
-                    st.session_state.scan_mode = None
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"Routing Error: {e}")
+            try:
+                search_points, road_geometry = get_ors_route_coords(
+                    st.session_state.pending_road_points[0],
+                    st.session_state.pending_road_points[1],
+                    RADIUS, ors_key
+                )
+                st.session_state.road_geometry = road_geometry
+                st.session_state.pending_road = False
+                st.session_state.pending_road_points = []
+                st.session_state.pending_search_points = search_points
+                st.session_state.scan_mode = None
+                st.rerun()
+            except Exception as e:
+                st.error(f"Routing Error: {e}")
  
     status_placeholder = st.empty()
 
@@ -346,16 +345,18 @@ if (st.session_state.scan_mode and map_data.get("last_clicked")) or st.session_s
             progress_bar = st.progress(0)
             progress_text = st.empty()
 
-            current_api_key = user_api_key if user_api_key else API_KEY_ENV
             seen_species = get_seen_species(uploaded_csv, DEFAULT_LIFE_LIST)
             species_map = {}
             total = len(search_points)
             for idx, (pt_lat, pt_lng) in enumerate(search_points):
-                obs = ebird.get_nearby_observations(current_api_key, pt_lat, pt_lng, dist=RADIUS, back=BACK_DAYS, category='species')
+                try:
+                    obs = ebird.get_nearby_observations(user_api_key, pt_lat, pt_lng, dist=RADIUS, back=BACK_DAYS, category='species')
+                except:
+                    st.error(f"Invalid eBird API Key")
                 lifers = [o for o in obs if o['comName'] not in seen_species and o.get('exoticCategory') != 'X']
                 for sp in lifers:
                     s_code = sp['speciesCode']
-                    specifics = ebird.get_nearest_species(current_api_key, s_code, pt_lat, pt_lng, dist=RADIUS, back=BACK_DAYS)
+                    specifics = ebird.get_nearest_species(user_api_key, s_code, pt_lat, pt_lng, dist=RADIUS, back=BACK_DAYS)
                     if s_code not in species_map: species_map[s_code] = []
                     for b in specifics:
                         if not any(existing['subId'] == b['subId'] for existing in species_map[s_code]):
@@ -373,9 +374,4 @@ if (st.session_state.scan_mode and map_data.get("last_clicked")) or st.session_s
             st.session_state.search_results = {'points': search_points, 'species_map': species_map}
             st.session_state.scan_mode, st.session_state.road_points = None, []
             st.rerun()
-
-
-
-
-
 
