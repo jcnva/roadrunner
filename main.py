@@ -353,15 +353,15 @@ if (st.session_state.scan_mode and map_data.get("last_clicked")) or st.session_s
 
     if search_points:
         with status_placeholder.container():
-            st.markdown("### 🛰️ Scanning...")
-            progress_bar = st.progress(0)
-            progress_text = st.empty()
+            try:
+                st.markdown("### 🛰️ Scanning...")
+                progress_bar = st.progress(0)
+                progress_text = st.empty()
 
-            seen_species = get_seen_species(uploaded_csv, DEFAULT_LIFE_LIST)
-            species_map = {}
-            total = len(search_points)
-            for idx, (pt_lat, pt_lng) in enumerate(search_points):
-                try:
+                seen_species = get_seen_species(uploaded_csv, DEFAULT_LIFE_LIST)
+                species_map = {}
+                total = len(search_points)
+                for idx, (pt_lat, pt_lng) in enumerate(search_points):
                     obs = ebird.get_nearby_observations(user_api_key, pt_lat, pt_lng, dist=RADIUS, back=BACK_DAYS, category='species')
                     lifers = [o for o in obs if o['comName'] not in seen_species and o.get('exoticCategory') != 'X']
                     for sp in lifers:
@@ -371,19 +371,20 @@ if (st.session_state.scan_mode and map_data.get("last_clicked")) or st.session_s
                         for b in specifics:
                             if not any(existing['subId'] == b['subId'] for existing in species_map[s_code]):
                                 species_map[s_code].append(b)
-                except Exception as e:
-                    st.error(f"eBird error: {e}")
 
                 # Update progress UI
                 pct = int(((idx + 1) / total) * 100)
                 progress_bar.progress(pct)
                 progress_text.markdown(f"Scanned **{idx + 1}/{total}** sections")
 
-            # Ensure final state reflects completion
-            progress_bar.progress(100)
-            progress_text.markdown(f"Scanned **{total}/{total}** sections — complete")
+                # Ensure final state reflects completion
+                progress_bar.progress(100)
+                progress_text.markdown(f"Scanned **{total}/{total}** sections — complete")
 
-            st.session_state.search_results = {'points': search_points, 'species_map': species_map}
-            st.session_state.scan_mode, st.session_state.road_points = None, []
-            st.rerun()
+                st.session_state.search_results = {'points': search_points, 'species_map': species_map}
+                st.session_state.scan_mode, st.session_state.road_points = None, []
+                st.rerun()
+
+            except Exception as e:
+                st.error(f"eBird API Error: {e}")
 
