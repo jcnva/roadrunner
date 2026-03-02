@@ -18,7 +18,6 @@ except:
     API_KEY_ENV = os.getenv('EBIRD_API_KEY')
     ORS_API_KEY_ENV = os.getenv('ORS_API_KEY')
 DEFAULT_LIFE_LIST = 'ebird_world_life_list.csv'
-RADIUS = 50 
 COLORS = ['red', 'blue', 'gray', 'darkred', 'lightred', 'orange', 'beige',
           'green', 'darkgreen', 'lightgreen', 'darkblue', 'lightblue',
           'purple', 'darkpurple', 'pink', 'cadetblue', 'lightgray', 'black']
@@ -168,11 +167,16 @@ If no file is provided, all species will be reported.
 """
     )    
 
+    RADIUS = st.select_slider(
+        "Radius (km)",
+        options=[2, 5, 10, 20, 50],
+        value=50
+    )
+
     BACK_DAYS = st.select_slider(
-        "Back Days",
+        "Time period (days ago)",
         options=[1, 3, 7, 14, 30],
-        value=14,
-        help="How many days back to search for sightings"
+        value=3
     )
 
     # --- Updated Scan Buttons with Validation ---
@@ -191,7 +195,7 @@ If no file is provided, all species will be reported.
             disabled=is_api_key_missing, # Disable if no key
             help="Enter an eBird API key to enable." if is_api_key_missing else """
                 • Click one point on the map
-                • Scans ONLY that location (50km radius)
+                • Scans ONLY that location (50km radius maximum)
                 """
         ):
             st.session_state.scan_mode = 'single'
@@ -205,7 +209,7 @@ If no file is provided, all species will be reported.
             disabled=is_api_key_missing, # Disable if no key
             help="Enter an eBird API key to enable." if is_api_key_missing else """
                 • Click one point on the map
-                • Scans a hexagonal grid around that location out to a radius of 136km
+                • Scans a hexagonal grid around that location (136km radius maximum)
                 """
         ):
             st.session_state.scan_mode = 'hex'
@@ -225,7 +229,6 @@ If no file is provided, all species will be reported.
                 • Click a START point
                 • Click an END point
                 • Scans along the real driving route
-                • Finds lifers within 50 km of the road
                 """
         ):
             st.session_state.scan_mode = 'road'
