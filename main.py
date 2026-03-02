@@ -76,7 +76,7 @@ def get_ors_route_coords(start, end, radius_km, api_key):
     coords = ((start[1], start[0]), (end[1], end[0]))
     
     # Get driving route
-    route = client.directions(coordinates=coords, profile='driving-car', format='geojson')
+    route = client.directions(coordinates=coords, profile='driving-car', format='geojson', radiuses=[-1,-1])
     geometry = route['features'][0]['geometry']['coordinates']
     
     # geometry is a list of [lon, lat] points along the road
