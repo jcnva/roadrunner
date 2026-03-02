@@ -15,15 +15,15 @@ The app offers three ways to scan the globe for birds:
 
 * 📍 Single Scan:
   * How it works: The user clicks a single point on the map.
-  * Logic: The app searches a single 50km radius circle around that point.
+  * Logic: The app searches a single circle around that point.
   * Use Case: Searching an area quickly.
 
 * 🎯 Hex Scan:
   * How it works: The user clicks a single point on the map.
-  * Logic: The app generates a hexagonal grid of coordinates around that point with an array of 50km diameter circles.
-  * Use Case: Searching a broader area with a 136km radius.
+  * Logic: The app generates a hexagonal grid of coordinates around that point with an array of circles.
+  * Use Case: Searching a broader area up to a 136km radius.
 
 * 🚗 Road Trip:
   * How it works: The user selects a START and END point.
-  * Logic: It uses the OpenRouteService API to calculate the actual driving route and samples coordinates every ~70km along that road.
+  * Logic: It uses the OpenRouteService API to calculate the actual driving route.
   * Use Case: Planning a trip and identifying which rare birds can be found within a 50km detour of the highway.
