@@ -249,26 +249,26 @@ If no file is provided, all species will be reported.
             st.info("🚗 Road Trip: Click the START point.")
         elif count == 1:
             st.warning("🚗 Road Trip (1/2 Selected): Click the END point.")
-        elif st.session_state.pending_road:
-            st.info("Route ready. Click 'Compute Route & Scan' to continue.")
+        #elif st.session_state.pending_road:
+            #st.info("Route ready. Click 'Compute Route & Scan' to continue.")
 
     # If a route has been selected but not yet computed, show a button to compute it
     if st.session_state.pending_road:
-        if st.button("Compute Route & Scan", use_container_width=True):
-            try:
-                search_points, road_geometry = get_ors_route_coords(
-                    st.session_state.pending_road_points[0],
-                    st.session_state.pending_road_points[1],
-                    RADIUS, ors_key
-                )
-                st.session_state.road_geometry = road_geometry
-                st.session_state.pending_road = False
-                st.session_state.pending_road_points = []
-                st.session_state.pending_search_points = search_points
-                st.session_state.scan_mode = None
-                st.rerun()
-            except Exception as e:
-                st.error(f"Routing Error: {e}")
+        #if st.button("Compute Route & Scan", use_container_width=True):
+        try:
+            search_points, road_geometry = get_ors_route_coords(
+                st.session_state.pending_road_points[0],
+                st.session_state.pending_road_points[1],
+                RADIUS, ors_key
+            )
+            st.session_state.road_geometry = road_geometry
+            st.session_state.pending_road = False
+            st.session_state.pending_road_points = []
+            st.session_state.pending_search_points = search_points
+            st.session_state.scan_mode = None
+            st.rerun()
+        except Exception as e:
+            st.error(f"Routing Error: {e}")
  
     status_placeholder = st.empty()
 
@@ -285,6 +285,16 @@ If no file is provided, all species will be reported.
         with col2:
             st.metric("Target Species", total_species)
 
+    if st.session_state.search_results and "current_map" in st.session_state:
+        map_html = st.session_state.current_map.get_root().render()
+
+        st.download_button(
+            "💾 Save Map as HTML",
+            map_html,
+            mime="text/html",
+            use_container_width=True
+        )
+
     if st.button("❌ Reset / Clear Map", use_container_width=True):
         st.session_state.scan_mode, st.session_state.road_points, st.session_state.search_results = None, [], None
         st.session_state.pending_road = False
@@ -295,6 +305,7 @@ If no file is provided, all species will be reported.
 
 # --- MAP RENDERING ---
 m = folium.Map(location=st.session_state.center, zoom_start=st.session_state.zoom, tiles=None)
+st.session_state.current_map = m
 folium.TileLayer('OpenStreetMap', control=False).add_to(m)
 Fullscreen().add_to(m)
 
