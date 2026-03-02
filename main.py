@@ -386,6 +386,5 @@ if (st.session_state.scan_mode and map_data.get("last_clicked")) or st.session_s
                 st.rerun()
 
             except Exception as e:
-                #st.error(f"eBird API Error: {e}")
-                st.error(search_points)
+                st.error(f"eBird API Error: {e}")
 
