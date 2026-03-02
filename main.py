@@ -322,7 +322,7 @@ if st.session_state.search_results:
     spider.add_to(m)
     folium.FitOverlays().add_to(m)
 
-map_data = st_folium(m, height=1000, use_container_width=True, key="mapper")
+map_data = st_folium(m, height=1000, use_container_width=True, key="mapper", wrap_longitude=True)
 
 # --- SCAN LOGIC ---
 # Trigger scanning either via an armed map click (hex/road) or via a pending search computed from the sidebar
@@ -387,4 +387,5 @@ if (st.session_state.scan_mode and map_data.get("last_clicked")) or st.session_s
 
             except Exception as e:
                 st.error(f"eBird API Error: {e}")
+
 
