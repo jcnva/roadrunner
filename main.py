@@ -354,10 +354,6 @@ if (st.session_state.scan_mode and map_data.get("last_clicked")) or st.session_s
     if search_points:
         with status_placeholder.container():
             try:
-                st.markdown("### 🛰️ Scanning...")
-                progress_bar = st.progress(0)
-                progress_text = st.empty()
-
                 seen_species = get_seen_species(uploaded_csv, DEFAULT_LIFE_LIST)
                 species_map = {}
                 total = len(search_points)
@@ -371,6 +367,10 @@ if (st.session_state.scan_mode and map_data.get("last_clicked")) or st.session_s
                         for b in specifics:
                             if not any(existing['subId'] == b['subId'] for existing in species_map[s_code]):
                                 species_map[s_code].append(b)
+
+                st.markdown("### 🛰️ Scanning...")
+                progress_bar = st.progress(0)
+                progress_text = st.empty()
 
                 # Update progress UI
                 pct = int(((idx + 1) / total) * 100)
@@ -386,6 +386,6 @@ if (st.session_state.scan_mode and map_data.get("last_clicked")) or st.session_s
                 st.rerun()
 
             except Exception as e:
-                st.error(f"eBird API Error: {e}")
-
+                #st.error(f"eBird API Error: {e}")
+                st.error(search_points)
 
