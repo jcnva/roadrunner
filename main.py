@@ -354,6 +354,10 @@ if (st.session_state.scan_mode and map_data.get("last_clicked")) or st.session_s
     if search_points:
         with status_placeholder.container():
             try:
+                st.markdown("### 🛰️ Scanning...")
+                progress_bar = st.progress(0)
+                progress_text = st.empty()
+
                 seen_species = get_seen_species(uploaded_csv, DEFAULT_LIFE_LIST)
                 species_map = {}
                 total = len(search_points)
@@ -368,18 +372,10 @@ if (st.session_state.scan_mode and map_data.get("last_clicked")) or st.session_s
                             if not any(existing['subId'] == b['subId'] for existing in species_map[s_code]):
                                 species_map[s_code].append(b)
 
-                st.markdown("### 🛰️ Scanning...")
-                progress_bar = st.progress(0)
-                progress_text = st.empty()
-
-                # Update progress UI
-                pct = int(((idx + 1) / total) * 100)
-                progress_bar.progress(pct)
-                progress_text.markdown(f"Scanned **{idx + 1}/{total}** sections")
-
-                # Ensure final state reflects completion
-                progress_bar.progress(100)
-                progress_text.markdown(f"Scanned **{total}/{total}** sections — complete")
+                    # Update progress UI
+                    pct = int(((idx + 1) / total) * 100)
+                    progress_bar.progress(pct)
+                    progress_text.markdown(f"Scanned **{idx + 1}/{total}** sections")
 
                 st.session_state.search_results = {'points': search_points, 'species_map': species_map}
                 st.session_state.scan_mode, st.session_state.road_points = None, []
