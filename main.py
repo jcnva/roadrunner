@@ -363,16 +363,16 @@ if (st.session_state.scan_mode and map_data.get("last_clicked")) or st.session_s
             for idx, (pt_lat, pt_lng) in enumerate(search_points):
                 try:
                     obs = ebird.get_nearby_observations(user_api_key, pt_lat, pt_lng, dist=RADIUS, back=BACK_DAYS, category='species')
-                except:
-                    st.error(f"Invalid eBird API Key")
-                lifers = [o for o in obs if o['comName'] not in seen_species and o.get('exoticCategory') != 'X']
-                for sp in lifers:
-                    s_code = sp['speciesCode']
-                    specifics = ebird.get_nearest_species(user_api_key, s_code, pt_lat, pt_lng, dist=RADIUS, back=BACK_DAYS)
-                    if s_code not in species_map: species_map[s_code] = []
-                    for b in specifics:
-                        if not any(existing['subId'] == b['subId'] for existing in species_map[s_code]):
-                            species_map[s_code].append(b)
+                    lifers = [o for o in obs if o['comName'] not in seen_species and o.get('exoticCategory') != 'X']
+                    for sp in lifers:
+                        s_code = sp['speciesCode']
+                        specifics = ebird.get_nearest_species(user_api_key, s_code, pt_lat, pt_lng, dist=RADIUS, back=BACK_DAYS)
+                        if s_code not in species_map: species_map[s_code] = []
+                        for b in specifics:
+                            if not any(existing['subId'] == b['subId'] for existing in species_map[s_code]):
+                                species_map[s_code].append(b)
+                except Exception as e:
+                    st.error(f"eBird error: {e}")
 
                 # Update progress UI
                 pct = int(((idx + 1) / total) * 100)
