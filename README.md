@@ -7,23 +7,23 @@ The app doesn't just show birds; it filters them based on your personal history.
 
 * Life List Integration: Users can upload their eBird sightings as a CSV.
 * Automatic Exclusion: The app compares nearby sightings against this list and only displays species the user hasn't checked off yet.
-* Exotic Filtering: It ignores species categorized as exotic (category 'X') to prioritize native or established sightings.
+* Exotic Filtering: It ignores species categorized as exotic escapees (category 'X') to prioritize native or established sightings.
 
 ## Search Modes
 
 The app offers three ways to scan the globe for birds:
 
 * 📍 Single Scan:
-  * How it works: The user clicks a single point on the map.
-  * Logic: The app searches a single circle around that point.
-  * Use Case: Searching an area quickly.
+  * The user clicks a single point on the map.
+  * The app searches a single circle around that point.
+  * Use Case: Searching a circular area up to 50km in radius.
 
 * 🎯 Hex Scan:
-  * How it works: The user clicks a single point on the map.
-  * Logic: The app generates a hexagonal grid of coordinates around that point with an array of circles.
-  * Use Case: Searching a broader area up to a 136km radius.
+  * The user clicks a single point on the map.
+  * The app generates a hexagonal grid of coordinates around that point with an array of circles.
+  * Use Case: Searching a broader area up to 136km in radius.
 
 * 🚗 Road Trip:
-  * How it works: The user selects a START and END point.
-  * Logic: It uses the OpenRouteService API to calculate the actual driving route.
-  * Use Case: Planning a trip and identifying which rare birds can be found within a 50km detour of the highway.
+  * The user selects a START and an END point.
+  * The app uses the OpenRouteService API to calculate the actual driving route.
+  * Use Case: Planning a trip and scanning for birds within 50km from the road.
