@@ -127,15 +127,15 @@ with st.sidebar:
         value=API_KEY_ENV if API_KEY_ENV else "",
         type="password",
         help="""
-Get your free API key from the eBird developer portal:
+    Get your free API key from the eBird developer portal:
 
-1. Log in to eBird
-2. Visit: https://ebird.org/api/keygen
-3. Generate and copy your key
-4. Paste it here
+    1. Log in to eBird
+    2. Visit: https://ebird.org/api/keygen
+    3. Generate and copy your key
+    4. Paste it here
 
-Required to fetch bird observations.
-"""
+    Required to fetch bird observations.
+    """
     )
 
     ors_key = st.text_input(
@@ -143,32 +143,32 @@ Required to fetch bird observations.
         value=ORS_API_KEY_ENV if ORS_API_KEY_ENV else "",
         type="password",
         help="""
-Get a free OpenRouteService key:
+    Get a free OpenRouteService key:
 
-1. Create an account at https://openrouteservice.org
-2. Go to Dashboard → API Keys
-3. Create a new token
-4. Paste it here
+    1. Create an account at https://openrouteservice.org
+    2. Go to Dashboard → API Keys
+    3. Create a new token
+    4. Paste it here
 
-Required for Road Trip routing.
-"""
+    Required for Road Trip routing.
+    """
     )
 
     uploaded_csv = st.file_uploader(
         "Upload Life List (.csv)",
         type=["csv"],
         help="""
-Upload your personal life list from eBird:
+    Upload your personal life list from eBird:
 
-How to export:
-1. Log in to eBird
-2. Go to My eBird → Sightings List
-3. Click “Download Data”
-4. Save as CSV
-5. Upload the file here
+    How to export:
+    1. Log in to eBird
+    2. Go to My eBird → Sightings List
+    3. Click “Download Data”
+    4. Save as CSV
+    5. Upload the file here
 
-If no file is provided, all species will be reported.
-"""
+    If no file is provided, all species will be reported.
+    """
     )    
 
     RADIUS = st.select_slider(
@@ -239,7 +239,7 @@ If no file is provided, all species will be reported.
             st.session_state.road_points = []
             st.rerun()
 
-    # Optional: Add a warning message if keys are missing
+    # Add a warning message if keys are missing
     if is_api_key_missing:
         st.caption("⚠️ **Buttons disabled:** Please provide an eBird API key above.")    
     
@@ -253,12 +253,8 @@ If no file is provided, all species will be reported.
             st.info("🚗 Road Trip: Click the START point.")
         elif count == 1:
             st.warning("🚗 Road Trip (1/2 Selected): Click the END point.")
-        #elif st.session_state.pending_road:
-            #st.info("Route ready. Click 'Compute Route & Scan' to continue.")
 
-    # If a route has been selected but not yet computed, show a button to compute it
     if st.session_state.pending_road:
-        #if st.button("Compute Route & Scan", use_container_width=True):
         try:
             search_points, road_geometry = get_ors_route_coords(
                 st.session_state.pending_road_points[0],
@@ -395,10 +391,8 @@ if (st.session_state.scan_mode and map_data.get("last_clicked")) or st.session_s
             if click not in st.session_state.road_points:
                 st.session_state.road_points.append(click)
                 if len(st.session_state.road_points) == 2:
-                    # Defer heavy routing call until user confirms — prevents UI hang on click
                     st.session_state.pending_road = True
                     st.session_state.pending_road_points = st.session_state.road_points.copy()
-                    # Keep the selected points visible; user must click the Compute button to proceed
                     st.rerun()
                 else:
                     st.rerun()
@@ -457,9 +451,12 @@ if (st.session_state.scan_mode and map_data.get("last_clicked")) or st.session_s
 
                             # Fetch checklist only once per subId
                             if subid not in checklist_cache:
-                                checklist_cache[subid] = fetch_checklist(
-                                    user_api_key, subid
-                                )
+                                try:
+                                    checklist_cache[subid] = fetch_checklist(
+                                        user_api_key, subid
+                                    )
+                                except:
+                                    checklist_cache[subid] = {}
 
                             cl = checklist_cache[subid]
 
