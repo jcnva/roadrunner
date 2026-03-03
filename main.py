@@ -38,6 +38,10 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --- MATH UTILS ---
+@st.cache_data(show_spinner=False)
+def fetch_checklist(api_key, subid):
+    return ebird.get_checklist(api_key, subid)
+
 def get_seen_species(uploaded_file, default_path):
     try:
         df = pd.read_csv(uploaded_file if uploaded_file else default_path)
@@ -326,12 +330,46 @@ if st.session_state.search_results:
         fg = folium.FeatureGroup(name=com_name)
         color = next(color_cycle)
         for bird in bird_list:
-            popup_html = f"<div style='font-family: Arial; width: 200px;'><h4 style='margin-bottom:5px;'>{bird['comName']}</h4><b>Date:</b> {bird['obsDt']}<br><b>Location:</b> {bird['locName']}<br><b>Count:</b> {bird.get('howMany', 'N/A')}<br><a href='https://ebird.org/checklist/{bird['subId']}' target='_blank'>View Checklist</a></div>"
-            folium.Marker(location=[bird['lat'], bird['lng']], popup=folium.Popup(popup_html, max_width=250), tooltip=com_name, icon=folium.Icon(color=color, icon='binoculars', prefix='fa')).add_to(fg)
+            icon = ''
+            if bird.get('has_photo'):
+                icon = 'camera'
+            elif bird.get('has_comment'):
+                icon = 'comment'
+
+            popup_html = f"""
+            <div style='font-family: Arial; width: 200px;'>
+                <h4 style='margin-bottom:5px;'>{bird['comName']}</h4>
+                <b>Date:</b> {bird['obsDt']}<br>
+                <b>Location:</b> {bird['locName']}<br>
+                <b>Count:</b> {bird.get('howMany', 'N/A')}<br>
+                <a href='https://ebird.org/checklist/{bird['subId']}' target='_blank'>View Checklist</a></div>"""
+            folium.Marker(
+                location=[bird['lat'], bird['lng']],
+                popup=folium.Popup(popup_html, max_width=250),
+                tooltip=com_name,
+                icon=folium.Icon(color=color, icon=icon, prefix='fa')
+            ).add_to(fg)
         fg.add_to(m)
         lifer_groups[com_name] = fg
 
-    overlay_tree = {"label": "Map Overlays", "children": [{"label": "Search Grid", "layer": grid_group}, {"label": "Potential Lifers", "select_all_checkbox": "Select/Unselect All", "children": [{"label": name, "layer": group} for name, group in sorted(lifer_groups.items())]}]}
+    overlay_tree = {
+        "label": "Map Overlays",
+        "children": [
+            {
+                "label": "Search Grid", 
+                "layer": grid_group
+            },
+            {
+                "label": "Potential Lifers",
+                "select_all_checkbox": "Select/Unselect All",
+                "children": [
+                    {"label": name, "layer": group} 
+                    for name, group in sorted(lifer_groups.items())
+                ]
+            }
+        ]
+    }
+    
     TreeLayerControl(overlay_tree=overlay_tree, collapsed=False).add_to(m)
     spider.add_to(m)
     folium.FitOverlays().add_to(m)
@@ -374,19 +412,73 @@ if (st.session_state.scan_mode and map_data.get("last_clicked")) or st.session_s
 
                 seen_species = get_seen_species(uploaded_csv, DEFAULT_LIFE_LIST)
                 species_map = {}
+                checklist_cache = {}
+
                 total = len(search_points)
+
                 for idx, (pt_lat, pt_lng) in enumerate(search_points):
-                    obs = ebird.get_nearby_observations(user_api_key, pt_lat, pt_lng, dist=RADIUS, back=BACK_DAYS, category='species')
-                    lifers = [o for o in obs if o['comName'] not in seen_species and o.get('exoticCategory') != 'X']
+                    obs = ebird.get_nearby_observations(
+                        user_api_key,
+                        pt_lat,
+                        pt_lng,
+                        dist=RADIUS,
+                        back=BACK_DAYS,
+                        category='species'
+                    )
+
+                    lifers = [
+                        o for o in obs
+                        if o['comName'] not in seen_species
+                        and o.get('exoticCategory') != 'X'
+                    ]
+
                     for sp in lifers:
                         s_code = sp['speciesCode']
-                        specifics = ebird.get_nearest_species(user_api_key, s_code, pt_lat, pt_lng, dist=RADIUS, back=BACK_DAYS)
-                        if s_code not in species_map: species_map[s_code] = []
-                        for b in specifics:
-                            if not any(existing['subId'] == b['subId'] for existing in species_map[s_code]):
-                                species_map[s_code].append(b)
 
-                    # Update progress UI
+                        specifics = ebird.get_nearest_species(
+                            user_api_key,
+                            s_code,
+                            pt_lat,
+                            pt_lng,
+                            dist=RADIUS,
+                            back=BACK_DAYS
+                        )
+
+                        if s_code not in species_map:
+                            species_map[s_code] = []
+
+                        for b in specifics:
+                            # Avoid duplicates
+                            if any(existing['subId'] == b['subId']
+                                   for existing in species_map[s_code]):
+                                continue
+
+                            subid = b['subId']
+
+                            # Fetch checklist only once per subId
+                            if subid not in checklist_cache:
+                                checklist_cache[subid] = fetch_checklist(
+                                    user_api_key, subid
+                                )
+
+                            cl = checklist_cache[subid]
+
+                            # Enrich bird with metadata
+                            b['has_comment'] = False
+                            b['has_photo'] = False
+
+                            for o in cl.get('obs', []):
+                                if o.get('speciesCode') == s_code:
+                                    if o.get('comments'):
+                                        b['has_comment'] = True
+
+                                    if o.get('mediaCounts'):
+                                        if o['mediaCounts'].get('P'):
+                                            b['has_photo'] = True
+
+                            species_map[s_code].append(b)
+
+                    # Progress update
                     pct = int(((idx + 1) / total) * 100)
                     progress_bar.progress(pct)
                     progress_text.markdown(f"Scanned **{idx + 1}/{total}** sections")
