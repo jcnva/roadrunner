@@ -7,7 +7,7 @@ The app doesn't just show birds; it filters them based on your personal history.
 
 * Life List Integration: Users can upload their eBird sightings as a CSV.
 * Automatic Exclusion: The app compares nearby sightings against this list and only displays species the user hasn't checked off yet.
-* Exotic Filtering: It ignores species categorized as exotic escapees (category 'X') to prioritize native or established sightings.
+* Exotic Filtering: It ignores species categorized as exotic escapees (category 'X'), hybrids, slashes, and spuhs to prioritize native or established sightings.
 
 ## Search Modes
 
