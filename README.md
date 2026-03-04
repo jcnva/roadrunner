@@ -34,4 +34,4 @@ The app offers three ways to scan the globe for birds:
 
 * Color-coded markers show where the birds are located, with icons to indicate sightings with photos or comments.
 * 💾 Save results as HTML files to browse offline, or share with others.
-  * 💡Tip: App map performance may struggle with larger reports. Browse the saved HTML map for a smoother user experience.
+  * 💡Tip: If app performance struggles with larger reports, browse the saved HTML map for a smoother user experience.
