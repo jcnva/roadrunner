@@ -17,14 +17,18 @@ try:
 except:
     API_KEY_ENV = os.getenv('EBIRD_API_KEY')
     ORS_API_KEY_ENV = os.getenv('ORS_API_KEY')
+
 DEFAULT_LIFE_LIST = 'ebird_world_life_list.csv'
 COLORS = ['red', 'blue', 'gray', 'darkred', 'lightred', 'orange', 'beige',
           'green', 'darkgreen', 'lightgreen', 'darkblue', 'lightblue',
           'purple', 'darkpurple', 'pink', 'cadetblue', 'lightgray', 'black']
 
-st.set_page_config(page_title="Roadrunner", layout="wide", page_icon='roadrunner.png', initial_sidebar_state="expanded")
+st.set_page_config(
+    page_title="Roadrunner", layout="wide", page_icon='roadrunner.png', initial_sidebar_state="expanded",
+    menu_items={'about': '**v1.0**\n\nCopyright © 2026 Jonathan Casanova'}
+)
 
-# CSS: Locked Sidebar, No Margins
+# --- CSS ---
 st.logo(image='roadrunner.png', size='large')
 st.markdown("""
 <style>
@@ -183,9 +187,9 @@ with st.sidebar:
         value=3
     )
 
-    # --- Updated Scan Buttons with Validation ---
+    # --- Scan Buttons with Validation ---
 
-    # Define the condition: buttons are disabled if the key is empty
+    # Buttons are disabled if the key is empty
     # This checks both the manual input and the environment fallback
     is_api_key_missing = not (user_api_key)
 
@@ -239,7 +243,7 @@ with st.sidebar:
             st.session_state.road_points = []
             st.rerun()
 
-    # Add a warning message if keys are missing
+    # Warning message if keys are missing
     if is_api_key_missing:
         st.caption("⚠️ **Buttons disabled:** Please provide an eBird API key above.")    
     
@@ -268,11 +272,11 @@ with st.sidebar:
             st.session_state.scan_mode = None
             st.rerun()
         except Exception as e:
-            st.error(f"Routing Error: {e}")
+            st.error(f"ORS API Error: {e}")
  
     status_placeholder = st.empty()
 
-    # METRICS LOGIC
+    # --- METRICS LOGIC ---
     if st.session_state.search_results:
         res = st.session_state.search_results
         total_sightings = sum(len(sightings) for sightings in res['species_map'].values())
@@ -327,10 +331,13 @@ if st.session_state.search_results:
         color = next(color_cycle)
         for bird in bird_list:
             icon = ''
+            z_index_offset = 0
             if bird.get('has_photo'):
                 icon = 'camera'
+                z_index_offset = 2
             elif bird.get('has_comment'):
                 icon = 'comment'
+                z_index_offset = 1
 
             popup_html = f"""
             <div style='font-family: Arial; width: 200px;'>
@@ -343,7 +350,7 @@ if st.session_state.search_results:
                 location=[bird['lat'], bird['lng']],
                 popup=folium.Popup(popup_html, max_width=250),
                 tooltip=com_name,
-                icon=folium.Icon(color=color, icon=icon, prefix='fa')
+                icon=folium.Icon(color=color, icon=icon, z_index_offset=z_index_offset, prefix='fa')
             ).add_to(fg)
         fg.add_to(m)
         lifer_groups[com_name] = fg
@@ -373,11 +380,9 @@ if st.session_state.search_results:
 map_data = st_folium(m, height=1000, use_container_width=True, key="mapper", wrap_longitude=True)
 
 # --- SCAN LOGIC ---
-# Trigger scanning either via an armed map click (hex/road) or via a pending search computed from the sidebar
 if (st.session_state.scan_mode and map_data.get("last_clicked")) or st.session_state.pending_search_points:
     search_points = []
 
-    # If a computed route/search was queued, use it
     if st.session_state.pending_search_points:
         search_points = st.session_state.pending_search_points
         st.session_state.pending_search_points = None

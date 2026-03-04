@@ -18,16 +18,16 @@ Search for the most recent sightings of the past 30 days, within a specified are
   3. Create a new token
 
 ### eBird Life List in .CSV format
- * If no file is provided, all species will be reported. (⚠️Warning. VERY slow.)
-1. Log in to eBird
-2. Go to My eBird → Sightings List
-3. Click “Download Data”
+ * If no file is provided, all birds will be reported. (⚠️Warning: VERY slow. Not recommended)
+  1. Log in to eBird
+  2. Go to My eBird → Sightings List
+  3. Click “Download Data”
     
 ## Exclusions
 
-* The app excludes all species your life list from its search.
+* The app excludes all species in your life list from its search.
   * 💡Tip: You can include a species in your search by deleting its row from the CSV file.
-* The app ignores birds categorized as exotic escapees (category 'X'), hybrids, slashes, and spuhs to prioritize native or established sightings.
+* The app excludes birds categorized as exotic escapees (category 'X'), hybrids, slashes, and spuhs to prioritize native or established sightings.
 
 ## Search Modes
 
@@ -50,7 +50,11 @@ The app offers three ways to scan the globe for birds:
 
 ## Results
 
-* Color-coded markers show where the birds are located, with icons to indicate sightings with photos or comments.
-* 💾 Save results as an interactive HTML files to browse offline, or share with others.
-  * 💡Tip: If app performance struggles with larger reports, browse the saved HTML map for a smoother user experience.
+* Map Markers show where the birds are located.
+  * Markers are color-coded by species.
+  * Icons indicate sightings with photos or comments.
+  * Click on a marker for sighting details and a link to the eBird checklist.
+* 💾 Save results as an interactive HTML file to browse offline, or share with others.
+  * 💡Tip: If app performance struggles with larger reports, try either (a) setting the map to Full Screen, or (b) browsing the saved HTML map, for a smoother user experience.
   * 💡Tip: If markers are not visible when you first open the HTML, try zooming ALL the way out.
+
