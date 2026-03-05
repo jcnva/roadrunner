@@ -25,7 +25,7 @@ COLORS = ['red', 'blue', 'gray', 'darkred', 'lightred', 'orange', 'beige',
 
 st.set_page_config(
     page_title="Roadrunner", layout="wide", page_icon='roadrunner.png', initial_sidebar_state="expanded",
-    menu_items={'about': '**v1.0**\n\nCopyright © 2026 Jonathan Casanova'}
+    menu_items={'about': '**v1.0**\n\nhttps://github.com/jcnva/roadrunner\n\nCopyright © 2026 Jonathan Casanova'}
 )
 
 # --- CSS ---
@@ -377,7 +377,8 @@ if st.session_state.search_results:
     spider.add_to(m)
     folium.FitOverlays().add_to(m)
 
-map_data = st_folium(m, height=1000, use_container_width=True, key="mapper", wrap_longitude=True)
+map_data = st_folium(m, height=1000, use_container_width=True, key="mapper",
+                     wrap_longitude=True, returned_objects=["last_clicked"])
 
 # --- SCAN LOGIC ---
 if (st.session_state.scan_mode and map_data.get("last_clicked")) or st.session_state.pending_search_points:
