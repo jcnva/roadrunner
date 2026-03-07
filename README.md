@@ -58,3 +58,6 @@ The app offers three ways to scan the globe for birds:
   * 💡Tip: If app performance struggles with larger reports, try either (a) setting the map to Full Screen, or (b) browsing the saved HTML map, for a smoother user experience.
   * 💡Tip: If markers are not visible when you first open the HTML, try zooming ALL the way out.
 
+## Demo
+
+https://github.com/user-attachments/assets/7ed078e3-7445-4669-bb7a-4f9bb7c10928
