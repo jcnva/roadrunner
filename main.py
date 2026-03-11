@@ -110,6 +110,7 @@ if 'road_points' not in st.session_state: st.session_state.road_points = []
 if 'pending_road' not in st.session_state: st.session_state.pending_road = False
 if 'pending_road_points' not in st.session_state: st.session_state.pending_road_points = []
 if 'pending_search_points' not in st.session_state: st.session_state.pending_search_points = None
+if 'lifelist' not in st.session_state: st.session_state.lifelist = None
 
 with st.sidebar:
     st.title("Roadrunner")
@@ -160,7 +161,10 @@ with st.sidebar:
 
     If no file is provided, all species will be reported.
     """
-    )    
+    )
+
+    if uploaded_csv is not None:
+        st.session_state.lifelist = uploaded_csv
 
     RADIUS = st.select_slider(
         "Radius (km)",
@@ -422,7 +426,7 @@ if (st.session_state.scan_mode and map_data.get("last_clicked")) or st.session_s
                 progress_bar = st.progress(0)
                 progress_text = st.empty()
 
-                seen_species = get_seen_species(uploaded_csv, DEFAULT_LIFE_LIST)
+                seen_species = get_seen_species(st.session_state.lifelist, DEFAULT_LIFE_LIST)
                 species_map = {}
                 checklist_cache = {}
 
