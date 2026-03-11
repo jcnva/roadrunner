@@ -8,7 +8,6 @@ from ebird.api import requests as ebird
 from itertools import cycle
 from folium.plugins import OverlappingMarkerSpiderfier, TreeLayerControl, Fullscreen
 from streamlit_folium import st_folium
-from openrouteservice import convert
 
 # --- CONFIGURATION ---
 try:
@@ -19,13 +18,13 @@ except:
     ORS_API_KEY_ENV = os.getenv('ORS_API_KEY')
 
 DEFAULT_LIFE_LIST = 'ebird_world_life_list.csv'
-COLORS = ['red', 'blue', 'gray', 'darkred', 'lightred', 'orange', 'beige',
-          'green', 'darkgreen', 'lightgreen', 'darkblue', 'lightblue',
-          'purple', 'darkpurple', 'pink', 'cadetblue', 'lightgray', 'black']
+COLORS = ['red', 'blue', 'green', 'darkred', 'lightred', 'orange', 'beige',
+          'purple', 'darkgreen', 'lightgreen', 'darkblue', 'lightblue',
+          'pink', 'darkpurple', 'cadetblue', 'lightgray', 'gray', 'black']
 
 st.set_page_config(
     page_title="Roadrunner", layout="wide", page_icon='roadrunner.png', initial_sidebar_state="expanded",
-    menu_items={'about': '**v1.0**\n\nhttps://github.com/jcnva/roadrunner\n\nCopyright © 2026 Jonathan Casanova'}
+    menu_items={'about': '**v1.0.1**\n\nhttps://github.com/jcnva/roadrunner\n\nCopyright © 2026 Jonathan Casanova'}
 )
 
 # --- CSS ---
@@ -62,18 +61,6 @@ def get_hex_coords(lat, lon, radius_km):
         d_lon = (dist / (111.32 * math.cos(math.radians(lat)))) * math.sin(angle_rad)
         points.append((lat + d_lat, lon + d_lon))
     return points
-
-def get_line_coords(start, end, radius_km):
-    lat1, lon1 = start
-    lat2, lon2 = end
-    R_earth = 6371
-    dlat, dlon = math.radians(lat2 - lat1), math.radians(lon2 - lon1)
-    a = math.sin(dlat/2)**2 + math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) * math.sin(dlon/2)**2
-    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
-    total_dist = R_earth * c
-    gapless_step = radius_km * math.sqrt(2)
-    steps = max(1, math.ceil(total_dist / gapless_step))
-    return [(lat1 + (lat2 - lat1) * (i/steps), lon1 + (lon2 - lon1) * (i/steps)) for i in range(steps + 1)]
 
 def get_ors_route_coords(start, end, radius_km, api_key):
     """Fetches real road geometry and samples points for gapless coverage."""
@@ -190,7 +177,6 @@ with st.sidebar:
     # --- Scan Buttons with Validation ---
 
     # Buttons are disabled if the key is empty
-    # This checks both the manual input and the environment fallback
     is_api_key_missing = not (user_api_key)
 
     col1, col2, col3 = st.columns(3)
@@ -243,20 +229,22 @@ with st.sidebar:
             st.session_state.road_points = []
             st.rerun()
 
+    status_placeholder = st.empty()
+
     # Warning message if keys are missing
     if is_api_key_missing:
         st.caption("⚠️ **Buttons disabled:** Please provide an eBird API key above.")    
     
     if st.session_state.scan_mode == 'single':
-        st.info("📍 Map Armed: Click one point to scan that location.")
+        status_placeholder.info("📍 Map Armed: Click one point to scan that location.")
     elif st.session_state.scan_mode == 'hex':
-        st.info("🎯 Map Armed: Click one point to scan hex grid.")
+        status_placeholder.info("🎯 Map Armed: Click one point to scan hex grid.")
     elif st.session_state.scan_mode == 'road':
         count = len(st.session_state.road_points)
         if count == 0:
-            st.info("🚗 Road Trip: Click the START point.")
+            status_placeholder.info("🚗 Road Trip: Click the START point.")
         elif count == 1:
-            st.warning("🚗 Road Trip (1/2 Selected): Click the END point.")
+            status_placeholder.warning("🚗 Road Trip (1/2 Selected): Click the END point.")
 
     if st.session_state.pending_road:
         try:
@@ -273,8 +261,6 @@ with st.sidebar:
             st.rerun()
         except Exception as e:
             st.error(f"ORS API Error: {e}")
- 
-    status_placeholder = st.empty()
 
     # --- METRICS LOGIC ---
     if st.session_state.search_results:
@@ -310,7 +296,31 @@ with st.sidebar:
 # --- MAP RENDERING ---
 m = folium.Map(location=st.session_state.center, zoom_start=st.session_state.zoom, tiles=None)
 st.session_state.current_map = m
-folium.TileLayer('OpenStreetMap', control=False).add_to(m)
+#folium.TileLayer('OpenStreetMap', control=False).add_to(m)
+
+#folium.TileLayer(
+#    tiles="https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
+#    attr="Google",
+#    name="Satellite",
+#    control=False
+#).add_to(m)
+
+folium.TileLayer(
+    tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    attr="Esri",
+    name="Satellite",
+    overlay=False,
+    control=False
+).add_to(m)
+
+folium.TileLayer(
+    tiles="https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
+    attr="Esri",
+    name="Labels",
+    overlay=True,
+    control=False
+).add_to(m)
+
 Fullscreen().add_to(m)
 
 spider = OverlappingMarkerSpiderfier(keep_spiderfied=True, nearby_distance=20)
@@ -321,8 +331,9 @@ if st.session_state.search_results:
     lifer_groups = {}
     
     grid_group = folium.FeatureGroup(name="Search Boundaries")
+    scan_radius = res['radius']*1000
     for pt in res['points']:
-        folium.Circle(pt, radius=RADIUS*1000, color='royalblue', weight=1, fill=True, fill_opacity=0.05).add_to(grid_group)
+        folium.Circle(pt, radius=scan_radius, color='royalblue', weight=1, fill=True, fill_opacity=0.05).add_to(grid_group)
     grid_group.add_to(m)
 
     for sp_code, bird_list in res['species_map'].items():
@@ -331,13 +342,13 @@ if st.session_state.search_results:
         color = next(color_cycle)
         for bird in bird_list:
             icon = ''
-            z_index_offset = 0
+            z = 0
             if bird.get('has_photo'):
                 icon = 'camera'
-                z_index_offset = 2
+                z = 2000
             elif bird.get('has_comment'):
                 icon = 'comment'
-                z_index_offset = 1
+                z = 1000
 
             popup_html = f"""
             <div style='font-family: Arial; width: 200px;'>
@@ -350,7 +361,8 @@ if st.session_state.search_results:
                 location=[bird['lat'], bird['lng']],
                 popup=folium.Popup(popup_html, max_width=250),
                 tooltip=com_name,
-                icon=folium.Icon(color=color, icon=icon, z_index_offset=z_index_offset, prefix='fa')
+                icon=folium.Icon(color=color, icon=icon, prefix='fa'),
+                z_index_offset=z
             ).add_to(fg)
         fg.add_to(m)
         lifer_groups[com_name] = fg
@@ -486,7 +498,9 @@ if (st.session_state.scan_mode and map_data.get("last_clicked")) or st.session_s
                     progress_bar.progress(pct)
                     progress_text.markdown(f"Scanned **{idx + 1}/{total}** sections")
 
-                st.session_state.search_results = {'points': search_points, 'species_map': species_map}
+                st.session_state.search_results = {'points': search_points,
+                                                   'species_map': species_map,
+                                                   'radius': RADIUS}
                 st.session_state.scan_mode, st.session_state.road_points = None, []
                 st.rerun()
 
