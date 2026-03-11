@@ -24,7 +24,7 @@ COLORS = ['red', 'blue', 'green', 'darkred', 'lightred', 'orange', 'beige',
 
 st.set_page_config(
     page_title="Roadrunner", layout="wide", page_icon='roadrunner.png', initial_sidebar_state="expanded",
-    menu_items={'about': '**v1.0.1**\n\nhttps://github.com/jcnva/roadrunner\n\nCopyright © 2026 Jonathan Casanova'}
+    menu_items={'about': '**v1.1.0**\n\nhttps://github.com/jcnva/roadrunner\n\nCopyright © 2026 Jonathan Casanova'}
 )
 
 # --- CSS ---
@@ -114,57 +114,59 @@ if 'lifelist' not in st.session_state: st.session_state.lifelist = None
 
 with st.sidebar:
     st.title("Roadrunner")
-    user_api_key = st.text_input(
-        "eBird API Key",
-        value=API_KEY_ENV if API_KEY_ENV else "",
-        type="password",
-        help="""
-    Get your free API key from the eBird developer portal:
 
-    1. Log in to eBird
-    2. Visit: https://ebird.org/api/keygen
-    3. Generate and copy your key
-    4. Paste it here
+    with st.expander("Settings"):
+        user_api_key = st.text_input(
+            "eBird API Key",
+            value=API_KEY_ENV if API_KEY_ENV else "",
+            type="password",
+            help="""
+        Get your free API key from the eBird developer portal:
 
-    Required to fetch bird observations.
-    """
-    )
+        1. Log in to eBird
+        2. Visit: https://ebird.org/api/keygen
+        3. Generate and copy your key
+        4. Paste it here
 
-    ors_key = st.text_input(
-        "OpenRouteService API Key",
-        value=ORS_API_KEY_ENV if ORS_API_KEY_ENV else "",
-        type="password",
-        help="""
-    Get a free OpenRouteService key:
+        Required to fetch bird observations.
+        """
+        )
 
-    1. Create an account at https://openrouteservice.org
-    2. Go to Dashboard → API Keys
-    3. Create a new token
-    4. Paste it here
+        ors_key = st.text_input(
+            "OpenRouteService API Key",
+            value=ORS_API_KEY_ENV if ORS_API_KEY_ENV else "",
+            type="password",
+            help="""
+        Get a free OpenRouteService key:
 
-    Required for Road Trip routing.
-    """
-    )
+        1. Create an account at https://openrouteservice.org
+        2. Go to Dashboard → API Keys
+        3. Create a new token
+        4. Paste it here
 
-    uploaded_csv = st.file_uploader(
-        "Upload Life List (.csv)",
-        type=["csv"],
-        help="""
-    Upload your personal life list from eBird:
+        Required for Road Trip routing.
+        """
+        )
 
-    How to export:
-    1. Log in to eBird
-    2. Go to My eBird → Sightings List
-    3. Click “Download Data”
-    4. Save as CSV
-    5. Upload the file here
+        uploaded_csv = st.file_uploader(
+            "Upload Life List (.csv)",
+            type=["csv"],
+            help="""
+        Upload your personal life list from eBird:
 
-    If no file is provided, all species will be reported.
-    """
-    )
+        How to export:
+        1. Log in to eBird
+        2. Go to My eBird → Sightings List
+        3. Click “Download Data”
+        4. Save as CSV
+        5. Upload the file here
 
-    if uploaded_csv is not None:
-        st.session_state.lifelist = uploaded_csv
+        If no file is provided, all species will be reported.
+        """
+        )
+
+        if uploaded_csv is not None:
+            st.session_state.lifelist = uploaded_csv
 
     RADIUS = st.select_slider(
         "Radius (km)",
