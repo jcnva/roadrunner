@@ -1,7 +1,7 @@
 # Roadrunner
 A trip planning app for lifer-chasers.
 Find "lifers" by cross-referencing your personal eBird "Life List" with real-time observation data.
-Search for the most recent sightings of the past 30 days, within a specified area up to 136km in diameter, or along a cross-county road trip route.
+Search for the most recent sightings of the past 30 days, within a specified area up to 136km in radius, or along a cross-county road trip route.
 
 ## Requirements
 
