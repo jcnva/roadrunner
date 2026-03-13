@@ -24,7 +24,7 @@ COLORS = ['red', 'blue', 'green', 'darkred', 'lightred', 'orange', 'beige',
 
 st.set_page_config(
     page_title="Roadrunner", layout="wide", page_icon='roadrunner.png', initial_sidebar_state="expanded",
-    menu_items={'about': '**v1.1.0**\n\nhttps://github.com/jcnva/roadrunner\n\nCopyright © 2026 Jonathan Casanova'}
+    menu_items={'about': '**v1.1.1**\n\nhttps://github.com/jcnva/roadrunner\n\nCopyright © 2026 Jonathan Casanova'}
 )
 
 # --- CSS ---
@@ -161,7 +161,7 @@ with st.sidebar:
         4. Save as CSV
         5. Upload the file here
 
-        If no file is provided, all species will be reported.
+        If no file is provided, all birds will be reported. (⚠️Warning: VERY slow. Not recommended)
         """
         )
 
@@ -235,16 +235,16 @@ with st.sidebar:
             st.session_state.road_points = []
             st.rerun()
 
-    status_placeholder = st.empty()
-
     # Warning message if keys are missing
     if is_api_key_missing:
         st.caption("⚠️ **Buttons disabled:** Please provide an eBird API key above.")    
+
+    status_placeholder = st.empty()
     
     if st.session_state.scan_mode == 'single':
-        status_placeholder.info("📍 Map Armed: Click one point to scan that location.")
+        status_placeholder.info("📍 Click a point.")
     elif st.session_state.scan_mode == 'hex':
-        status_placeholder.info("🎯 Map Armed: Click one point to scan hex grid.")
+        status_placeholder.info("🎯 Click a point.")
     elif st.session_state.scan_mode == 'road':
         count = len(st.session_state.road_points)
         if count == 0:
@@ -268,30 +268,7 @@ with st.sidebar:
         except Exception as e:
             st.error(f"ORS API Error: {e}")
 
-    # --- METRICS LOGIC ---
-    if st.session_state.search_results:
-        res = st.session_state.search_results
-        total_sightings = sum(len(sightings) for sightings in res['species_map'].values())
-        total_species = len(res['species_map'])
-
-        col1, col2 = st.columns(2) 
-
-        with col1:
-            st.metric("Unique Sightings", total_sightings)
-        with col2:
-            st.metric("Target Species", total_species)
-
-    if st.session_state.search_results and "current_map" in st.session_state:
-        map_html = st.session_state.current_map.get_root().render()
-
-        st.download_button(
-            "💾 Save Map as HTML",
-            map_html,
-            mime="text/html",
-            use_container_width=True
-        )
-
-    if st.button("❌ Reset / Clear Map", use_container_width=True):
+    if st.button("❌ Reset Map", use_container_width=True):
         st.session_state.scan_mode, st.session_state.road_points, st.session_state.search_results = None, [], None
         st.session_state.pending_road = False
         st.session_state.pending_road_points = []
@@ -301,7 +278,6 @@ with st.sidebar:
 
 # --- MAP RENDERING ---
 m = folium.Map(location=st.session_state.center, zoom_start=st.session_state.zoom, tiles=None)
-st.session_state.current_map = m
 #folium.TileLayer('OpenStreetMap', control=False).add_to(m)
 
 #folium.TileLayer(
@@ -381,8 +357,8 @@ if st.session_state.search_results:
                 "layer": grid_group
             },
             {
-                "label": "Potential Lifers",
-                "select_all_checkbox": "Select/Unselect All",
+                "label": "Select All",
+                "select_all_checkbox": True,
                 "children": [
                     {"label": name, "layer": group} 
                     for name, group in sorted(lifer_groups.items())
@@ -394,6 +370,27 @@ if st.session_state.search_results:
     TreeLayerControl(overlay_tree=overlay_tree, collapsed=False).add_to(m)
     spider.add_to(m)
     folium.FitOverlays().add_to(m)
+
+    map_html = m.get_root().render()
+
+    if st.session_state.scan_mode is None:
+        with status_placeholder.container():
+            total_sightings = sum(len(sightings) for sightings in res['species_map'].values())
+            total_species = len(res['species_map'])
+
+            col1, col2 = st.columns(2) 
+
+            with col1:
+                st.metric("Unique Sightings", total_sightings)
+            with col2:
+                st.metric("Target Species", total_species)
+
+            st.download_button(
+                "💾 Save Map",
+                map_html,
+                mime="text/html",
+                use_container_width=True
+            )
 
 map_data = st_folium(m, height=1000, use_container_width=True, key="mapper",
                      wrap_longitude=True, returned_objects=["last_clicked"])
@@ -430,7 +427,7 @@ if (st.session_state.scan_mode and map_data.get("last_clicked")) or st.session_s
 
                 seen_species = get_seen_species(st.session_state.lifelist, DEFAULT_LIFE_LIST)
                 species_map = {}
-                checklist_cache = {}
+                cl = {}
 
                 total = len(search_points)
 
@@ -474,21 +471,17 @@ if (st.session_state.scan_mode and map_data.get("last_clicked")) or st.session_s
                             subid = b['subId']
 
                             # Fetch checklist only once per subId
-                            if subid not in checklist_cache:
+                            if subid not in cl:
                                 try:
-                                    checklist_cache[subid] = fetch_checklist(
-                                        user_api_key, subid
-                                    )
+                                    cl[subid] = fetch_checklist(user_api_key, subid)
                                 except:
-                                    checklist_cache[subid] = {}
-
-                            cl = checklist_cache[subid]
+                                    cl[subid] = {}
 
                             # Enrich bird with metadata
                             b['has_comment'] = False
                             b['has_photo'] = False
 
-                            for o in cl.get('obs', []):
+                            for o in cl[subid].get('obs', []):
                                 if o.get('speciesCode') == s_code:
                                     if o.get('comments'):
                                         b['has_comment'] = True
