@@ -18,9 +18,9 @@ except:
     ORS_API_KEY_ENV = os.getenv('ORS_API_KEY')
 
 DEFAULT_LIFE_LIST = 'ebird_world_life_list.csv'
-COLORS = ['red', 'blue', 'green', 'darkred', 'lightred', 'orange', 'beige',
-          'purple', 'darkgreen', 'lightgreen', 'darkblue', 'lightblue',
-          'pink', 'darkpurple', 'cadetblue', 'lightgray', 'gray', 'black']
+COLORS = ['red', 'blue', 'green', 'purple', 'orange', 'pink', 'beige',
+          'darkred', 'darkblue', 'darkgreen', 'darkpurple', 'cadetblue',
+          'lightred', 'lightblue', 'lightgreen', 'lightgray', 'gray', 'black']
 
 st.set_page_config(
     page_title="Roadrunner", layout="wide", page_icon='roadrunner.png', initial_sidebar_state="expanded",
@@ -31,7 +31,7 @@ st.set_page_config(
 st.logo(image='roadrunner.png', size='large')
 st.markdown("""
 <style>
-    section[data-testid="stSidebar"] { width: 278px; }
+    section[data-testid="stSidebar"] { width: 275px; }
     section[data-testid="stSidebar"] div[data-testid="stMarkdownContainer"] h1 { padding-top: 0 !important; margin: 0 !important; }
     .block-container { padding: 0px; padding-top: 1rem; max-width: 100%; height: 100vh; margin: 0px; }
     header[data-testid="stHeader"] { height: 2rem ; min-height: 2rem; }
@@ -115,21 +115,21 @@ if 'lifelist' not in st.session_state: st.session_state.lifelist = None
 with st.sidebar:
     st.title("Roadrunner")
 
-    with st.expander("Settings"):
+    with st.expander("Setup"):
         user_api_key = st.text_input(
             "eBird API Key",
             value=API_KEY_ENV if API_KEY_ENV else "",
             type="password",
             help="""
-        Get your free API key from the eBird developer portal:
+            Get your free API key from the eBird developer portal:
 
-        1. Log in to eBird
-        2. Visit: https://ebird.org/api/keygen
-        3. Generate and copy your key
-        4. Paste it here
+            1. Log in to eBird
+            2. Visit: https://ebird.org/api/keygen
+            3. Generate and copy your key
+            4. Paste it here
 
-        Required to fetch bird observations.
-        """
+            Required to fetch bird observations.
+            """
         )
 
         ors_key = st.text_input(
@@ -137,32 +137,32 @@ with st.sidebar:
             value=ORS_API_KEY_ENV if ORS_API_KEY_ENV else "",
             type="password",
             help="""
-        Get a free OpenRouteService key:
+            Get a free OpenRouteService key:
 
-        1. Create an account at https://openrouteservice.org
-        2. Go to Dashboard → API Keys
-        3. Create a new token
-        4. Paste it here
+            1. Create an account at https://openrouteservice.org
+            2. Go to Dashboard → API Keys
+            3. Create a new token
+            4. Paste it here
 
-        Required for Road Trip routing.
-        """
+            Required for Road Trip routing.
+            """
         )
 
         uploaded_csv = st.file_uploader(
             "Upload Life List (.csv)",
             type=["csv"],
             help="""
-        Upload your personal life list from eBird:
+            Upload your personal life list from eBird:
 
-        How to export:
-        1. Log in to eBird
-        2. Go to My eBird → Sightings List
-        3. Click “Download Data”
-        4. Save as CSV
-        5. Upload the file here
+            How to export:
+            1. Log in to eBird
+            2. Go to My eBird → Sightings List
+            3. Click “Download Data”
+            4. Save as CSV
+            5. Upload the file here
 
-        If no file is provided, all birds will be reported. (⚠️Warning: VERY slow. Not recommended)
-        """
+            If no file is provided, all birds will be reported. (⚠️Warning: VERY slow. Not recommended)
+            """
         )
 
         if uploaded_csv is not None:
@@ -248,9 +248,9 @@ with st.sidebar:
     elif st.session_state.scan_mode == 'road':
         count = len(st.session_state.road_points)
         if count == 0:
-            status_placeholder.info("🚗 Road Trip: Click the START point.")
+            status_placeholder.info("🚗 Click the START point.")
         elif count == 1:
-            status_placeholder.warning("🚗 Road Trip (1/2 Selected): Click the END point.")
+            status_placeholder.warning("🚗 Click the END point.")
 
     if st.session_state.pending_road:
         try:
@@ -278,6 +278,7 @@ with st.sidebar:
 
 # --- MAP RENDERING ---
 m = folium.Map(location=st.session_state.center, zoom_start=st.session_state.zoom, tiles=None)
+
 #folium.TileLayer('OpenStreetMap', control=False).add_to(m)
 
 #folium.TileLayer(
@@ -289,7 +290,8 @@ m = folium.Map(location=st.session_state.center, zoom_start=st.session_state.zoo
 
 folium.TileLayer(
     tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-    attr="Esri",
+    attr="""Sources: <a href='https://www.esri.com' target='_blank'>Esri</a>, DigitalGlobe, GeoEye, 
+        i-cubed, USDA FSA, USGS, AEX, Getmapping, Aerogrid, IGN, IGP, swisstopo""",
     name="Satellite",
     overlay=False,
     control=False
@@ -297,7 +299,7 @@ folium.TileLayer(
 
 folium.TileLayer(
     tiles="https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
-    attr="Esri",
+    attr="and the GIS User Community",
     name="Labels",
     overlay=True,
     control=False

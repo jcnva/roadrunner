@@ -1,7 +1,7 @@
 # Roadrunner
 A trip planning app for lifer-chasers.
 Find "lifers" by cross-referencing your personal eBird "Life List" with real-time observation data.
-Search for the most recent sightings of the past 30 days, within a specified area up to 136km in radius, or along a cross-county road trip route.
+Search for the most recent sightings of the past 30 days, within a specified area up to 136km in diameter, or along a cross-county road trip route.
 
 ## Requirements
 
@@ -56,8 +56,4 @@ The app offers three ways to scan the globe for birds:
   * Click on a marker for sighting details and a link to the eBird checklist.
 * 💾 Save results as an interactive HTML file to browse offline, or share with others.
   * 💡Tip: If app performance struggles with larger reports, try either (a) setting the map to Full Screen, or (b) browsing the saved HTML map, for a smoother user experience.
-  * 💡Tip: If markers are not visible when you first open the HTML, try zooming ALL the way out.
 
-## Demo
-
-https://github.com/user-attachments/assets/7ed078e3-7445-4669-bb7a-4f9bb7c10928
