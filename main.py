@@ -290,8 +290,7 @@ m = folium.Map(location=st.session_state.center, zoom_start=st.session_state.zoo
 
 folium.TileLayer(
     tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-    attr="""Sources: <a href='https://www.esri.com' target='_blank'>Esri</a>, DigitalGlobe, GeoEye, 
-        i-cubed, USDA FSA, USGS, AEX, Getmapping, Aerogrid, IGN, IGP, swisstopo""",
+    attr="Sources: <a href='https://www.esri.com' target='_blank'>Esri</a>, Maxar, Earthstar Geographics",
     name="Satellite",
     overlay=False,
     control=False
