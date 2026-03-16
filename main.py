@@ -45,10 +45,12 @@ st.markdown("""
 def fetch_checklist(api_key, subid):
     return ebird.get_checklist(api_key, subid)
 
+@st.cache_data(show_spinner=False)
 def get_seen_species(uploaded_file, default_path):
     try:
         df = pd.read_csv(uploaded_file if uploaded_file else default_path)
-        return set(df['Common Name'].unique())
+        df1 = df[df['Countable'] == 1]
+        return set(df1['Common Name'].unique())
     except:
         return set()
 
@@ -171,6 +173,9 @@ with st.sidebar:
 
         if uploaded_csv is not None:
             st.session_state.lifelist = uploaded_csv
+
+    seen_species = get_seen_species(st.session_state.lifelist, DEFAULT_LIFE_LIST)
+    st.metric("Species in Life List", len(seen_species))
 
     RADIUS = st.select_slider(
         "Radius (km)",
@@ -420,7 +425,6 @@ if (st.session_state.scan_mode and map_data.get("last_clicked")) or st.session_s
                 progress_bar = st.progress(0)
                 progress_text = st.empty()
 
-                seen_species = get_seen_species(st.session_state.lifelist, DEFAULT_LIFE_LIST)
                 species_map = {}
                 cl = {}
 
