@@ -24,7 +24,7 @@ COLORS = ['red', 'blue', 'green', 'purple', 'orange', 'pink', 'beige',
 
 st.set_page_config(
     page_title="Roadrunner", layout="wide", page_icon='roadrunner.png', initial_sidebar_state="expanded",
-    menu_items={'about': '**v1.1.1**\n\nhttps://github.com/jcnva/roadrunner\n\nCopyright © 2026 Jonathan Casanova'}
+    menu_items={'about': '**v1.1.2**\n\nhttps://github.com/jcnva/roadrunner\n\nCopyright © 2026 Jonathan Casanova'}
 )
 
 # --- CSS ---
@@ -116,37 +116,41 @@ with st.sidebar:
     st.title("Roadrunner")
 
     with st.expander("Setup"):
-        user_api_key = st.text_input(
-            "eBird API Key",
-            value=API_KEY_ENV if API_KEY_ENV else "",
-            type="password",
-            help="""
-            Get your free API key from the eBird developer portal:
+        if API_KEY_ENV:
+            user_api_key = API_KEY_ENV
+        else:
+            user_api_key = st.text_input(
+                "eBird API Key",
+                type="password",
+                help="""
+                Get your free API key from the eBird developer portal:
 
-            1. Log in to eBird
-            2. Visit: https://ebird.org/api/keygen
-            3. Generate and copy your key
-            4. Paste it here
+                1. Log in to eBird
+                2. Visit: https://ebird.org/api/keygen
+                3. Generate and copy your key
+                4. Paste it here
 
-            Required to fetch bird observations.
-            """
-        )
+                Required to fetch bird observations.
+                """
+            )
 
-        ors_key = st.text_input(
-            "OpenRouteService API Key",
-            value=ORS_API_KEY_ENV if ORS_API_KEY_ENV else "",
-            type="password",
-            help="""
-            Get a free OpenRouteService key:
+        if ORS_API_KEY_ENV:
+            ors_key = ORS_API_KEY_ENV
+        else:
+            ors_key = st.text_input(
+                "OpenRouteService API Key",
+                type="password",
+                help="""
+                Get a free OpenRouteService key:
 
-            1. Create an account at https://openrouteservice.org
-            2. Go to Dashboard → API Keys
-            3. Create a new token
-            4. Paste it here
+                1. Create an account at https://openrouteservice.org
+                2. Go to Dashboard → API Keys
+                3. Create a new token
+                4. Paste it here
 
-            Required for Road Trip routing.
-            """
-        )
+                Required for Road Trip routing.
+                """
+            )
 
         uploaded_csv = st.file_uploader(
             "Upload Life List (.csv)",
@@ -279,34 +283,23 @@ with st.sidebar:
 # --- MAP RENDERING ---
 m = folium.Map(location=st.session_state.center, zoom_start=st.session_state.zoom, tiles=None)
 
-#folium.TileLayer('OpenStreetMap', control=False).add_to(m)
+folium.TileLayer('OpenStreetMap', control=False).add_to(m)
 
 #folium.TileLayer(
-#    tiles="https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
-#    attr="Google",
+#    tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+#    attr="Sources: <a href='https://www.esri.com' target='_blank'>Esri</a>, Maxar, Earthstar Geographics",
 #    name="Satellite",
+#    overlay=False,
 #    control=False
 #).add_to(m)
-
-folium.TileLayer(
-    tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-    attr="Sources: <a href='https://www.esri.com' target='_blank'>Esri</a>, Maxar, Earthstar Geographics",
-    name="Satellite",
-    overlay=False,
-    control=False
-).add_to(m)
-
-folium.TileLayer(
-    tiles="https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
-    attr="and the GIS User Community",
-    name="Labels",
-    overlay=True,
-    control=False
-).add_to(m)
-
-Fullscreen().add_to(m)
-
-spider = OverlappingMarkerSpiderfier(keep_spiderfied=True, nearby_distance=20)
+#
+#folium.TileLayer(
+#    tiles="https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
+#    attr="and the GIS User Community",
+#    name="Labels",
+#    overlay=True,
+#    control=False
+#).add_to(m)
 
 if st.session_state.search_results:
     res = st.session_state.search_results
@@ -369,8 +362,9 @@ if st.session_state.search_results:
     }
     
     TreeLayerControl(overlay_tree=overlay_tree, collapsed=False).add_to(m)
-    spider.add_to(m)
     folium.FitOverlays().add_to(m)
+    OverlappingMarkerSpiderfier(keep_spiderfied=True, nearby_distance=20).add_to(m)
+    Fullscreen().add_to(m)
 
     map_html = m.get_root().render()
 
