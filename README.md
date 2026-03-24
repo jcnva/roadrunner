@@ -10,13 +10,6 @@ Search for the most recent sightings of the past 30 days, within a specified are
   1. Log in to eBird
   2. Visit: https://ebird.org/api/keygen
 
-### OpenRouteService API Key
- * Required for Road Trip Routing.
- * Get a free OpenRouteService key:
-  1. Create an account at https://openrouteservice.org
-  2. Go to Dashboard → API Keys
-  3. Create a new token
-
 ### eBird Life List in .CSV format
  * If no file is provided, all birds will be reported. (⚠️Warning: VERY slow. Not recommended)
   1. Log in to eBird
