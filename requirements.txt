@@ -1,6 +1,6 @@
-streamlit==1.55.0
-folium==0.20.0
-streamlit-folium==0.26.2
-pandas==2.3.3
-openrouteservice==2.3.3
-ebird-api-requests==4.0.2
+streamlit>=1.57.0
+folium>=0.20.0
+streamlit-folium>=0.27.2
+pandas>=3.0.3
+openrouteservice>=2.3.3
+ebird-api-requests>=4.0.2

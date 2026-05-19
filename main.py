@@ -286,25 +286,7 @@ with st.sidebar:
         st.rerun()
 
 # --- MAP RENDERING ---
-m = folium.Map(location=st.session_state.center, zoom_start=st.session_state.zoom, tiles=None)
-
-folium.TileLayer('OpenStreetMap', control=False).add_to(m)
-
-#folium.TileLayer(
-#    tiles="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-#    attr="Sources: <a href='https://www.esri.com' target='_blank'>Esri</a>, Maxar, Earthstar Geographics",
-#    name="Satellite",
-#    overlay=False,
-#    control=False
-#).add_to(m)
-#
-#folium.TileLayer(
-#    tiles="https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}",
-#    attr="and the GIS User Community",
-#    name="Labels",
-#    overlay=True,
-#    control=False
-#).add_to(m)
+m = folium.Map(location=st.session_state.center, zoom_start=st.session_state.zoom)
 
 if st.session_state.search_results:
     res = st.session_state.search_results
@@ -332,10 +314,10 @@ if st.session_state.search_results:
                 z = 1000
 
             popup_html = f"""
-            <div style='font-family: Arial; width: 200px;'>
-                <h4 style='margin-bottom:5px;'>{bird['comName']}</h4>
-                <b>Date:</b> {bird['obsDt']}<br>
+            <div style='font-family: sans-serif; font-size: 12px;'>
+                <b style='font-size: 14px'>{bird['comName']}</b><br>
                 <b>Location:</b> {bird['locName']}<br>
+                <b>Date:</b> {bird['obsDt']}<br>
                 <b>Count:</b> {bird.get('howMany', 'N/A')}<br>
                 <a href='https://ebird.org/checklist/{bird['subId']}' target='_blank'>View Checklist</a></div>"""
             folium.Marker(
