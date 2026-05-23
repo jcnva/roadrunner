@@ -24,7 +24,7 @@ COLORS = ['red', 'blue', 'green', 'purple', 'orange', 'pink', 'beige',
 
 st.set_page_config(
     page_title="Roadrunner", layout="wide", page_icon='roadrunner.png', initial_sidebar_state="expanded",
-    menu_items={'about': '**v1.1.2**\n\nhttps://github.com/jcnva/roadrunner\n\nCopyright © 2026 Jonathan Casanova'}
+    menu_items={'about': '**v1.1.3**\n\nhttps://github.com/jcnva/roadrunner\n\nCopyright © 2026 Jonathan Casanova'}
 )
 
 # --- CSS ---
@@ -313,13 +313,17 @@ if st.session_state.search_results:
                 icon = 'comment'
                 z = 1000
 
+            comment_html = f"<b>Comments:</b> {bird.get('comment_text', '')}<br>" if bird.get('has_comment') else ""
+
             popup_html = f"""
             <div style='font-family: sans-serif; font-size: 12px;'>
                 <b style='font-size: 14px'>{bird['comName']}</b><br>
                 <b>Location:</b> {bird['locName']}<br>
                 <b>Date:</b> {bird['obsDt']}<br>
                 <b>Count:</b> {bird.get('howMany', 'N/A')}<br>
-                <a href='https://ebird.org/checklist/{bird['subId']}' target='_blank'>View Checklist</a></div>"""
+                {comment_html}
+                <a href='https://ebird.org/checklist/{bird['subId']}' target='_blank'>{bird['subId']}</a></div>"""
+
             folium.Marker(
                 location=[bird['lat'], bird['lng']],
                 popup=folium.Popup(popup_html, max_width=250),
@@ -461,11 +465,13 @@ if (st.session_state.scan_mode and map_data.get("last_clicked")) or st.session_s
                             # Enrich bird with metadata
                             b['has_comment'] = False
                             b['has_photo'] = False
+                            b['comment_text'] = ""
 
                             for o in cl[subid].get('obs', []):
                                 if o.get('speciesCode') == s_code:
                                     if o.get('comments'):
                                         b['has_comment'] = True
+                                        b['comment_text'] = o.get('comments')
 
                                     if o.get('mediaCounts'):
                                         if o['mediaCounts'].get('P'):
